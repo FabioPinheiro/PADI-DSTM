@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Master
+namespace Client
 {
     static class Program
     {
@@ -16,7 +16,7 @@ namespace Master
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MasterForm());
+            Application.Run(new FormClient());
         }
     }
 }

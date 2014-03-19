@@ -1,6 +1,6 @@
 ﻿namespace Master
 {
-    partial class Form1
+    partial class MasterForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,21 +28,33 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.textBox_log = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
-            // Form1
+            // textBox_log
+            // 
+            this.textBox_log.Location = new System.Drawing.Point(12, 12);
+            this.textBox_log.Name = "textBox_log";
+            this.textBox_log.Size = new System.Drawing.Size(260, 237);
+            this.textBox_log.TabIndex = 0;
+            this.textBox_log.Text = "LOG:";
+            // 
+            // MasterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 261);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Controls.Add(this.textBox_log);
+            this.Name = "MasterForm";
+            this.Text = "Master";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private System.Windows.Forms.RichTextBox textBox_log;
     }
 }
 
