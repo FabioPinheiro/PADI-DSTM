@@ -7,6 +7,8 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
+using PADI_DSTM_Lib;
+
 
 namespace Master
 {
@@ -18,21 +20,16 @@ namespace Master
         [STAThread]
         static void Main()
         {
-            TcpChannel channel = new TcpChannel(8086);
-            ChannelServices.RegisterChannel(channel, true);
 
-            RemotingConfiguration.RegisterWellKnownServiceType(
-                typeof(MyRemoteObject),
-                "MyRemoteObjectName",
-                WellKnownObjectMode.Singleton);
-
-            System.Console.WriteLine("<enter> para sair...");
-            System.Console.ReadLine();
-
+            System.Console.WriteLine("1111111111111111111111111111111111111111");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MasterForm());
+
+
+            System.Console.WriteLine("222222222222222222222222222222222222222");
+        
         }
     }
 }

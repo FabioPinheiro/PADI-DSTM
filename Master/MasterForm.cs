@@ -7,6 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels.Tcp;
+using System.Runtime.Remoting.Channels;
+using System.Net.Sockets;
+using PADI_DSTM_Lib;
 
 namespace Master
 {
@@ -15,11 +20,29 @@ namespace Master
         public MasterForm()
         {
             InitializeComponent();
+
+            System.Console.WriteLine("################################1");
+            TcpChannel channel = new TcpChannel();
+            ChannelServices.RegisterChannel(channel, true);
+            System.Console.WriteLine("################################2");
+
+
+
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
+            URL obj = (URL)Activator.GetObject(typeof(URL), "tcp://localhost:8086/MyRemoteObjectName");
 
+            if (obj == null)
+                this.textBox_log.Text += "\r\n" + "Could not locate server";
+            //System.Console.WriteLine("Could not locate server");
+            else
+                this.textBox_log.Text += "\r\n" + 
+                    obj.MetodoOla();
+            //Console.WriteLine(obj.MetodoOla());
+            System.Console.WriteLine("################################3");
         }
+
     }
 }

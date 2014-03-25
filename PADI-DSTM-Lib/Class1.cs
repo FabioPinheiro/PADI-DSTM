@@ -17,19 +17,19 @@ namespace PADI_DSTM_Lib
 
             return true;
         }
-        bool TxBegin();
+        //bool TxBegin();
 
-        bool TxCommit();
+        //bool TxCommit();
 
-        bool TxAbort();
+        //bool TxAbort();
 
-        bool Status();
+        //bool Status();
 
-        bool Fail(string URL);      /*this method makes the server at the URL stop responding to external calls except for a Recover call (see below).*/
+        //bool Fail(string URL);      /*this method makes the server at the URL stop responding to external calls except for a Recover call (see below).*/
 
-        bool Freeze(string URL);
+        //bool Freeze(string URL);
 
-        bool Recover(string URL);   /*this method makes the server at URL recover from a previous Fail or Freeze call. */
+        //bool Recover(string URL);   /*this method makes the server at URL recover from a previous Fail or Freeze call. */
 
     }
 }

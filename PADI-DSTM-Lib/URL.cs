@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PADI_DSTM_Lib
 {
-    class URL : MarshalByRefObject
+    public class URL : MarshalByRefObject
     {
         public string MetodoOla()
         {

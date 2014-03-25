@@ -7,6 +7,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
+using PADI_DSTM_Lib;
 
 namespace Salve
 {
@@ -14,23 +15,12 @@ namespace Salve
     {
         static void Main(string[] args)
         {
-            TcpChannel channel = new TcpChannel();
-            ChannelServices.RegisterChannel(channel, true);
-
-            MyRemoteObject obj = (MyRemoteObject)Activator.GetObject(
-                typeof(MyRemoteObject),
-                "tcp://localhost:8086/MyRemoteObjectName");
-
-            try
-            {
-                Console.WriteLine(obj.MetodoOla());
-            }
-            catch (SocketException)
-            {
-                System.Console.WriteLine("Could not locate server");
-            }
-
-            Console.ReadLine();
+            TcpChannel channel = new TcpChannel(8086); 
+            ChannelServices.RegisterChannel(channel); 
+            URL mo = new URL(); 
+            RemotingServices.Marshal(mo,"MyRemoteObjectName",typeof(URL)); 
+            System.Console.WriteLine("<enter> para sair..."); 
+            System.Console.ReadLine(); 
         }
     }
 }
