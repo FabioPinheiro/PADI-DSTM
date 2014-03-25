@@ -17,13 +17,14 @@ namespace Master
 {
     public partial class MasterForm : Form
     {
+        TcpChannel channel;
         public MasterForm()
         {
             InitializeComponent();
 
             System.Console.WriteLine("################################1");
-            TcpChannel channel = new TcpChannel();
-            ChannelServices.RegisterChannel(channel, true);
+            channel = new TcpChannel();
+            ChannelServices.RegisterChannel(channel, false);
             System.Console.WriteLine("################################2");
 
 
