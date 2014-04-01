@@ -13,16 +13,39 @@ namespace Salve
 {
     class Program
     {
+        String nick;
+        String location;
+
+        public void printToScreen(URL teste)
+        {
+            System.Console.WriteLine(teste.getPort());
+        }
+        public void register(String username, String url)
+        {
+            nick = username;
+            location = url;
+        }
         static void Main(string[] args)
         {
             TcpChannel channel = new TcpChannel(8086); 
-            ChannelServices.RegisterChannel(channel, false); 
-            URL mo = new URL(); 
-            RemotingServices.Marshal(mo,"MyRemoteObjectName",typeof(URL));
-            mo.getPort();
-            System.Console.WriteLine(mo.getPort());
+            ChannelServices.RegisterChannel(channel, false);
+            MasterServices ms = new MasterServices();
+            RemotingServices.Marshal(ms, "MyRemoteObjectName", typeof(MasterServices));
             System.Console.WriteLine("<enter> para sair..."); 
             System.Console.ReadLine(); 
         }
     }
+    public class MasterServices : MarshalByRefObject,IMasterService 
+    {
+        public void register(String nick, String location)
+        {
+            System.Console.WriteLine(nick + " " + location);
+        }
+        public string MetodoOla()
+        {
+            return "ola!";
+        }
+    }
+
+
 }

@@ -10,10 +10,12 @@ namespace PADI_DSTM_Lib
     {
         private string username;
         private string port;
+
         public string MetodoOla()
         {
             return "ola!";
         }
+
         public void register(String name, String location)
         {
             username = name;
@@ -27,6 +29,12 @@ namespace PADI_DSTM_Lib
         {
             return port;
         }
-
     }
+    public interface IMasterService
+    {
+        void register(String nick, String location);
+        string MetodoOla();
+    }
+
+
 }

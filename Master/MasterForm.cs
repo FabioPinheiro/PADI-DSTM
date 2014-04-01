@@ -33,7 +33,7 @@ namespace Master
 
         private void button1_Click(object sender, EventArgs e)
         {
-            URL obj = (URL)Activator.GetObject(typeof(URL), "tcp://localhost:8086/MyRemoteObjectName");
+            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
 
             if (obj == null)
                 this.textBox_log.Text += "\r\n" + "Could not locate server";
