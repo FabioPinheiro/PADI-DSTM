@@ -8,9 +8,25 @@ namespace PADI_DSTM_Lib
 {
     public class URL : MarshalByRefObject
     {
+        private string username;
+        private string port;
         public string MetodoOla()
         {
             return "ola!";
         }
+        public void register(String name, String location)
+        {
+            username = name;
+            port = location;
+        }
+        public string getNick()
+        {
+            return username;
+        }
+        public string getPort()
+        {
+            return port;
+        }
+
     }
 }

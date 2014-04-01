@@ -18,7 +18,9 @@ namespace Salve
             TcpChannel channel = new TcpChannel(8086); 
             ChannelServices.RegisterChannel(channel, false); 
             URL mo = new URL(); 
-            RemotingServices.Marshal(mo,"MyRemoteObjectName",typeof(URL)); 
+            RemotingServices.Marshal(mo,"MyRemoteObjectName",typeof(URL));
+            mo.getPort();
+            System.Console.WriteLine(mo.getPort());
             System.Console.WriteLine("<enter> para sair..."); 
             System.Console.ReadLine(); 
         }

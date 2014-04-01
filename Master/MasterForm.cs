@@ -39,10 +39,18 @@ namespace Master
                 this.textBox_log.Text += "\r\n" + "Could not locate server";
             //System.Console.WriteLine("Could not locate server");
             else
-                this.textBox_log.Text += "\r\n" + 
+            {
+                this.textBox_log.Text += "\r\n" +
                     obj.MetodoOla();
+                obj.register("nick", "location");
+            }
             //Console.WriteLine(obj.MetodoOla());
             System.Console.WriteLine("################################3");
+        }
+
+        private void MasterForm_Load(object sender, EventArgs e)
+        {
+
         }
 
     }

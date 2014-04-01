@@ -59,6 +59,7 @@
             this.Controls.Add(this.textBox_log);
             this.Name = "MasterForm";
             this.Text = "Master";
+            this.Load += new System.EventHandler(this.MasterForm_Load);
             this.ResumeLayout(false);
 
         }
