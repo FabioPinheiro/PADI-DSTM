@@ -17,35 +17,25 @@ namespace Master
 {
     public partial class MasterForm : Form
     {
-        TcpChannel channel;
+        
         public MasterForm()
         {
             InitializeComponent();
 
-            System.Console.WriteLine("################################1");
-            channel = new TcpChannel();
+            System.Console.WriteLine();
+
+            TcpChannel channel = new TcpChannel(8086);
             ChannelServices.RegisterChannel(channel, false);
-            System.Console.WriteLine("################################2");
-
-
+            MasterServices ms = new MasterServices();
+            RemotingServices.Marshal(ms, "MyRemoteObjectName", typeof(MasterServices));
+            this.textBox_log.Text += "\r\n" + " MASTER Entering THE HOUSE";
+            this.textBox_log.Text += "\r\n" + "MASTER LEAVING THE HOUSE";
 
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
-
-            if (obj == null)
-                this.textBox_log.Text += "\r\n" + "Could not locate server";
-            //System.Console.WriteLine("Could not locate server");
-            else
-            {
-                this.textBox_log.Text += "\r\n" +
-                    obj.MetodoOla();
-                obj.register("nick", "location");
-            }
-            //Console.WriteLine(obj.MetodoOla());
-            System.Console.WriteLine("################################3");
+            
         }
 
         private void MasterForm_Load(object sender, EventArgs e)

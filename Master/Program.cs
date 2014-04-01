@@ -14,6 +14,15 @@ namespace Master
 {
     static class Program
     {
+
+     /*   String nick;
+        String location;
+
+        public void register(String username, String url)
+        {
+            nick = username;
+            location = url; //Check this :D
+        }*/
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -21,15 +30,27 @@ namespace Master
         static void Main()
         {
 
-            System.Console.WriteLine("1111111111111111111111111111111111111111");
+            System.Console.WriteLine("MASTER IN THE HOUSE");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MasterForm());
 
 
-            System.Console.WriteLine("222222222222222222222222222222222222222");
         
+        }
+
+     
+    }
+    public class MasterServices : MarshalByRefObject, IMasterService
+    {
+        public void register(String nick, String location)
+        {
+            System.Console.WriteLine(nick + " " + location);
+        }
+        public string MetodoOla()
+        {
+            return "ola!";
         }
     }
 }

@@ -13,39 +13,28 @@ namespace Salve
 {
     class Program
     {
-        String nick;
-        String location;
 
-        public void printToScreen(URL teste)
-        {
-            System.Console.WriteLine(teste.getPort());
-        }
-        public void register(String username, String url)
-        {
-            nick = username;
-            location = url;
-        }
+        public static TcpChannel channel;
+
         static void Main(string[] args)
         {
-            TcpChannel channel = new TcpChannel(8086); 
+            channel = new TcpChannel();
             ChannelServices.RegisterChannel(channel, false);
-            MasterServices ms = new MasterServices();
-            RemotingServices.Marshal(ms, "MyRemoteObjectName", typeof(MasterServices));
-            System.Console.WriteLine("<enter> para sair..."); 
-            System.Console.ReadLine(); 
+            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
+
+            if (obj == null)
+                System.Console.WriteLine("Could not locate server");
+            //System.Console.WriteLine("Could not locate server");
+            else
+            {
+                obj.MetodoOla();
+                obj.register("nick", "location");
+            }
+            //Console.WriteLine(obj.MetodoOla());
+            System.Console.WriteLine("#END SLAVE# PEACE OUT");
         }
     }
-    public class MasterServices : MarshalByRefObject,IMasterService 
-    {
-        public void register(String nick, String location)
-        {
-            System.Console.WriteLine(nick + " " + location);
-        }
-        public string MetodoOla()
-        {
-            return "ola!";
-        }
-    }
+   
 
 
 }
