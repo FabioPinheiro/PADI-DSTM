@@ -39,6 +39,7 @@
             this.textBox_log.Size = new System.Drawing.Size(159, 237);
             this.textBox_log.TabIndex = 0;
             this.textBox_log.Text = "LOG:";
+            this.textBox_log.TextChanged += new System.EventHandler(this.textBox_log_TextChanged);
             // 
             // button1
             // 

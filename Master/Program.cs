@@ -44,13 +44,22 @@ namespace Master
     }
     public class MasterServices : MarshalByRefObject, IMasterService
     {
+        String name;
+        String url;
+
+
         public void register(String nick, String location)
         {
+            name = nick;
+            url = location;
             System.Console.WriteLine(nick + " " + location);
         }
         public string MetodoOla()
         {
             return "ola!";
+        }
+        public string getRegisted() {
+            return "nome: " + name + " localização " + url; 
         }
     }
 }

@@ -34,7 +34,13 @@ namespace PADI_DSTM_Lib
     {
         void register(String nick, String location);
         string MetodoOla();
+        string getRegisted();
     }
+    public interface ISlaveService
+    {
+        string MetodoOlaClient();
+    }
+
 
 
 }

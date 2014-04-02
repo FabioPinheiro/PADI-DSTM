@@ -15,9 +15,10 @@ namespace Salve
     {
 
         public static TcpChannel channel;
-
+        public static TcpChannel channel1;
         static void Main(string[] args)
         {
+            System.Console.WriteLine("#BEGIN SLAVE# YELLOW");
             channel = new TcpChannel();
             ChannelServices.RegisterChannel(channel, false);
             IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
@@ -28,11 +29,29 @@ namespace Salve
             else
             {
                 obj.MetodoOla();
-                obj.register("nick", "location");
+                obj.register("aovelhanegra", "tcp://localhost:8087/MyRemoteObjectName");
+
+                //CREATE THE NEW CHANNEL
+                channel1 = new TcpChannel(8087);
+                ChannelServices.RegisterChannel(channel1, false);
+                SlaveServices cs = new SlaveServices();
+                RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));
+                //END CHANNEL CREATION
+               System.Console.WriteLine(obj.getRegisted());
+                
             }
             //Console.WriteLine(obj.MetodoOla());
             System.Console.WriteLine("#END SLAVE# PEACE OUT");
+            System.Console.Read();
         }
+    }
+    class SlaveServices : MarshalByRefObject, ISlaveService
+    {
+        public string MetodoOlaClient()
+        {
+            return "ola cliente :D";
+        }
+
     }
    
 

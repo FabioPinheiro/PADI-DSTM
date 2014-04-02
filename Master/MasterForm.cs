@@ -28,8 +28,7 @@ namespace Master
             ChannelServices.RegisterChannel(channel, false);
             MasterServices ms = new MasterServices();
             RemotingServices.Marshal(ms, "MyRemoteObjectName", typeof(MasterServices));
-            this.textBox_log.Text += "\r\n" + " MASTER Entering THE HOUSE";
-            this.textBox_log.Text += "\r\n" + "MASTER LEAVING THE HOUSE";
+            this.textBox_log.Text += "\r\n" + "MASTER IS ALIVE";
 
         }
 
@@ -39,6 +38,11 @@ namespace Master
         }
 
         private void MasterForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_log_TextChanged(object sender, EventArgs e)
         {
 
         }
