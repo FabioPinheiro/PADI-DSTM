@@ -8,6 +8,7 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
 using PADI_DSTM_Lib;
+using System.Collections;
 
 
 namespace Master
@@ -46,13 +47,19 @@ namespace Master
     {
         String name;
         String url;
+        Master master;
 
-
-        public void register(String nick, String location)
+        public MasterServices(Master master){
+            this.master = master;
+        }
+        public MasterServices() { 
+        }
+        public int register(String nick, String location)
         {
             name = nick;
             url = location;
             System.Console.WriteLine(nick + " " + location);
+            return master.registSlave();
         }
         public string MetodoOla()
         {
@@ -61,5 +68,22 @@ namespace Master
         public string getRegisted() {
             return "nome: " + name + " localização " + url; 
         }
+    }
+    public class Master
+    {
+        MasterServices ms;
+        SortedList slaves = new SortedList(); //key port, value to be decided ; o port identifica o slave.
+        Hashtable padIntsHash = new Hashtable(); //check this
+        int port;
+
+        public Master() {
+            ms = new MasterServices(this);
+        }
+        public int registSlave() {
+            port++;
+            slaves.Add(port, "slave"); //TODO correct this
+            return port;
+        }
+
     }
 }

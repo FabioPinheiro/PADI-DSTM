@@ -32,7 +32,7 @@ namespace PADI_DSTM_Lib
     }
     public interface IMasterService
     {
-        void register(String nick, String location);
+        int register(String nick, String location);
         string MetodoOla();
         string getRegisted();
     }
