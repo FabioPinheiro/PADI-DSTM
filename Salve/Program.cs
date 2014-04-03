@@ -8,41 +8,25 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
 using PADI_DSTM_Lib;
+using System.Collections;
 
 namespace Salve
 {
     class Program
     {
 
-        public static TcpChannel channel;
-        public static TcpChannel channel1;
+
         static void Main(string[] args)
         {
             System.Console.WriteLine("#BEGIN SLAVE# YELLOW");
-            channel = new TcpChannel();
-            ChannelServices.RegisterChannel(channel, false);
-            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
+            Slave slave = new Slave();
+            slave.registSlave();
 
-            if (obj == null)
-                System.Console.WriteLine("Could not locate server");
-            //System.Console.WriteLine("Could not locate server");
-            else
-            {
-                obj.MetodoOla();
-                obj.register("aovelhanegra", "tcp://localhost:8087/MyRemoteObjectName");
+            System.Console.WriteLine("#SLAVE# Wainting press enter to leave");
 
-                //CREATE THE NEW CHANNEL
-                channel1 = new TcpChannel(8087);
-                ChannelServices.RegisterChannel(channel1, false);
-                SlaveServices cs = new SlaveServices();
-                RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));
-                //END CHANNEL CREATION
-               System.Console.WriteLine(obj.getRegisted());
-                
-            }
-            //Console.WriteLine(obj.MetodoOla());
-            System.Console.WriteLine("#END SLAVE# PEACE OUT");
             System.Console.Read();
+            System.Console.WriteLine("#END SLAVE# PEACE OUT");
+
         }
     }
     class SlaveServices : MarshalByRefObject, ISlaveService
@@ -50,6 +34,47 @@ namespace Salve
         public string MetodoOlaClient()
         {
             return "ola cliente :D";
+        }
+
+    }
+
+    class Slave
+    {
+        public TcpChannel channelToOut; //change to a list or something of tcpChannel
+        public TcpChannel channelListening;
+        SlaveServices cs;
+        IDictionary propBag;
+
+        public Slave()
+        {
+            channelToOut = new TcpChannel();
+            ChannelServices.RegisterChannel(channelToOut, false);
+            propBag = new Hashtable();
+            propBag["name"] = ""; // "Each channel must have a unique name. Set this property to an empty string ("" or String.Empty) 
+            //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
+
+        }
+        public void registSlave(){
+            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
+            if (obj == null)
+                System.Console.WriteLine("Could not locate server");
+            //System.Console.WriteLine("Could not locate server");
+            else
+            {
+                System.Console.WriteLine(obj.MetodoOla());
+                obj.register("aovelhanegra", "tcp://localhost:8087/MyRemoteObjectName");
+                System.Console.WriteLine(obj.getRegisted());
+                createChannel(8087);
+
+            }
+        }
+        public void createChannel(int port)
+        {
+            propBag["port"] = port;
+            TcpChannel channelListening = new TcpChannel(propBag, null, null);
+            ChannelServices.RegisterChannel(channelListening, false);
+            SlaveServices cs = new SlaveServices();
+            RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));
         }
 
     }

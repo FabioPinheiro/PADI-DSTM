@@ -12,6 +12,7 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
 using PADI_DSTM_Lib;
+using System.Collections;
 
 namespace Client
 {
@@ -37,24 +38,14 @@ namespace Client
                 this.richTextBox1.Text += "\r\n " + obj.MetodoOla();
 
             }
+
             
  
         }
 
         private void ClientForm_Load(object sender, EventArgs e)
         {
-            TcpChannel channel = new TcpChannel();
-            ChannelServices.RegisterChannel(channel, false);
-            ISlaveService obj = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:8087/MyRemoteObjectName");
-            if (obj == null)
-                System.Console.WriteLine("Could not locate server");
-            //System.Console.WriteLine("Could not locate server");
-            else
-            {
-                this.richTextBox1.Text += "HI Again";
-                this.richTextBox1.Text += "\r\n " + obj.MetodoOlaClient();
 
-            }
 
         }
 
@@ -65,6 +56,17 @@ namespace Client
 
         private void button1_Click(object sender, EventArgs e)
         {
+            TcpChannel channel = new TcpChannel();
+            ISlaveService obj = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:8087/MyRemoteObjectName");
+            if (obj == null)
+                System.Console.WriteLine("Could not locate server");
+            //System.Console.WriteLine("Could not locate server");
+            else
+            {
+                this.richTextBox1.Text += "HI Again";
+                this.richTextBox1.Text += "\r\n " + obj.MetodoOlaClient();
+
+            }
 
         }
     }
