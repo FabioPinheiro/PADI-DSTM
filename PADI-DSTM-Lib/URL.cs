@@ -43,6 +43,25 @@ namespace PADI_DSTM_Lib
 
     }
 
+    public class PadInt
+    {
+        private int value;
+        private int id;
+        public PadInt(int uid)
+        {
+            id = uid;
+        }
+        public int Read()
+        {
+            return value;
+        }
+        public void Write(int value)
+        {
+            this.value = value;
+        }
+
+    }
+
 
 
 }
