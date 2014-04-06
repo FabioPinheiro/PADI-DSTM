@@ -35,6 +35,9 @@ namespace Salve
         {
             return "ola cliente :D";
         }
+        public void createPadInt()
+        {
+        }
 
     }
 
@@ -44,6 +47,7 @@ namespace Salve
         public TcpChannel channelListening;
         SlaveServices cs;
         IDictionary propBag;
+        private int port;
 
         public Slave()
         {
@@ -62,16 +66,16 @@ namespace Salve
             else
             {
                 System.Console.WriteLine(obj.MetodoOla());
-                obj.register("aovelhanegra", "tcp://localhost:8087/MyRemoteObjectName");
-                System.Console.WriteLine(obj.getRegisted());
-                createChannel(8087);
+                port = obj.register();
+                System.Console.WriteLine("porto " + port);
+                createChannel(port);
 
             }
         }
         public void createChannel(int port)
         {
             propBag["port"] = port;
-            TcpChannel channelListening = new TcpChannel(propBag, null, null);
+            channelListening = new TcpChannel(propBag, null, null);
             ChannelServices.RegisterChannel(channelListening, false);
             SlaveServices cs = new SlaveServices();
             RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));

@@ -32,13 +32,15 @@ namespace PADI_DSTM_Lib
     }
     public interface IMasterService
     {
-        int register(String nick, String location);
+        int register();
         string MetodoOla();
-        string getRegisted();
+        int getSlave();
     }
     public interface ISlaveService
     {
         string MetodoOlaClient();
+        void createPadInt();
+
     }
 
 

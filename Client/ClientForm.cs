@@ -21,23 +21,9 @@ namespace Client
         public ClientForm()
         {
             InitializeComponent();
-            System.Console.WriteLine();
-            TcpChannel channel = new TcpChannel();
 
-            ChannelServices.RegisterChannel(channel, false);
-            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
-            if (obj == null)
-                System.Console.WriteLine("Could not locate server");
-            //System.Console.WriteLine("Could not locate server");
-            else
-            {
-                obj.MetodoOla();
-                System.Console.WriteLine(obj.getRegisted());
-                this.richTextBox1.Text += "HI THERE";
-                this.richTextBox1.Text += "\r\n "+  obj.getRegisted();
-                this.richTextBox1.Text += "\r\n " + obj.MetodoOla();
 
-            }
+
 
             
  
@@ -57,7 +43,27 @@ namespace Client
         private void button1_Click(object sender, EventArgs e)
         {
             TcpChannel channel = new TcpChannel();
-            ISlaveService obj = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:8087/MyRemoteObjectName");
+            int port;
+            ChannelServices.RegisterChannel(channel, false);
+            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
+            if (obj == null)
+                System.Console.WriteLine("Could not locate server");
+            //System.Console.WriteLine("Could not locate server");
+            else
+            {
+                this.richTextBox1.Text += "HI THERE";
+                this.richTextBox1.Text += "\r\n " + obj.getSlave();
+                this.richTextBox1.Text += "\r\n " + obj.MetodoOla();
+                port = obj.getSlave();
+
+            }
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            TcpChannel channel = new TcpChannel();
+            ISlaveService obj = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:8088/MyRemoteObjectName");
             if (obj == null)
                 System.Console.WriteLine("Could not locate server");
             //System.Console.WriteLine("Could not locate server");

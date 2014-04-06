@@ -49,11 +49,12 @@ namespace Master
         String url;
         Master master;
 
-        public MasterServices(Master master){
-            this.master = master;
+        public MasterServices(Master aux){
+            master = aux;
         }
         public MasterServices() { 
         }
+
         public int register(String nick, String location)
         {
             name = nick;
@@ -61,12 +62,17 @@ namespace Master
             System.Console.WriteLine(nick + " " + location);
             return master.registSlave();
         }
+        public int register() {
+            return master.registSlave();
+        }
         public string MetodoOla()
         {
-            return "ola!";
+            return "ola! sou o master";
         }
-        public string getRegisted() {
-            return "nome: " + name + " localização " + url; 
+
+        public int getSlave()
+        {
+            return master.getSlave(); //TODO
         }
     }
     public class Master
@@ -74,15 +80,23 @@ namespace Master
         MasterServices ms;
         SortedList slaves = new SortedList(); //key port, value to be decided ; o port identifica o slave.
         Hashtable padIntsHash = new Hashtable(); //check this
-        int port;
+        int port = 8087;
 
         public Master() {
             ms = new MasterServices(this);
         }
         public int registSlave() {
             port++;
-            slaves.Add(port, "slave"); //TODO correct this
+            slaves.Add(port, port); //TODO correct this
             return port;
+        }
+        public int getSlave()
+        {
+            return (int) slaves.GetByIndex(0); //Correct this.
+        }
+        public MasterServices getMasterServices()
+        {
+            return ms;
         }
 
     }

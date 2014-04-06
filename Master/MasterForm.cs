@@ -26,7 +26,8 @@ namespace Master
 
             TcpChannel channel = new TcpChannel(8086);
             ChannelServices.RegisterChannel(channel, false);
-            MasterServices ms = new MasterServices();
+            Master master = new Master();
+            MasterServices ms = master.getMasterServices();
             RemotingServices.Marshal(ms, "MyRemoteObjectName", typeof(MasterServices));
             this.textBox_log.Text += "\r\n" + "MASTER IS ALIVE";
 
