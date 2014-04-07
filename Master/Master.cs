@@ -77,13 +77,23 @@ namespace Master
     }
     public class Master
     {
+        TcpChannel channel = new TcpChannel(8086);
         MasterServices ms;
+
+        //############# EXISTE EM TODOS OS SERVIDORES ###############################
+        Hashtable padIntsSortedLists = new Hashtable(); //tem sorted lists que contem padInts
         SortedList slaves = new SortedList(); //key port, value to be decided ; o port identifica o slave.
-        Hashtable padIntsHash = new Hashtable(); //check this
+        //############# EXISTE EM TODOS OS SERVIDORES ###############################
+
+
+        //SortedList padInts = new SortedList(); // key Padint ID; Value valor.
+        Hashtable padIntsLocation = new Hashtable(); //check this
         int port = 8087;
 
         public Master() {
             ms = new MasterServices(this);
+            ChannelServices.RegisterChannel(channel, false);
+
         }
         public int registSlave() {
             port++;

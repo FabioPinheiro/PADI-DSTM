@@ -18,15 +18,10 @@ namespace Client
 {
     public partial class ClientForm : Form
     {
+        private int port= 0;
         public ClientForm()
         {
             InitializeComponent();
-
-
-
-
-            
- 
         }
 
         private void ClientForm_Load(object sender, EventArgs e)
@@ -42,37 +37,16 @@ namespace Client
 
         private void button1_Click(object sender, EventArgs e)
         {
-            TcpChannel channel = new TcpChannel();
-            int port;
-            ChannelServices.RegisterChannel(channel, false);
-            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
-            if (obj == null)
-                System.Console.WriteLine("Could not locate server");
-            //System.Console.WriteLine("Could not locate server");
-            else
-            {
-                this.richTextBox1.Text += "HI THERE";
-                this.richTextBox1.Text += "\r\n " + obj.getSlave();
-                this.richTextBox1.Text += "\r\n " + obj.MetodoOla();
-                port = obj.getSlave();
-
-            }
+           PadiDstm.Init();
+           this.richTextBox1.Text += "HI";
 
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            TcpChannel channel = new TcpChannel();
-            ISlaveService obj = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:8088/MyRemoteObjectName");
-            if (obj == null)
-                System.Console.WriteLine("Could not locate server");
-            //System.Console.WriteLine("Could not locate server");
-            else
-            {
-                this.richTextBox1.Text += "HI Again";
-                this.richTextBox1.Text += "\r\n " + obj.MetodoOlaClient();
+            PadiDstm.TxBegin();
+            this.richTextBox1.Text += "HI Again";
 
-            }
 
         }
 

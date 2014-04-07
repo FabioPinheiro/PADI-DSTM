@@ -24,8 +24,7 @@ namespace Master
 
             System.Console.WriteLine();
 
-            TcpChannel channel = new TcpChannel(8086);
-            ChannelServices.RegisterChannel(channel, false);
+
             Master master = new Master();
             MasterServices ms = master.getMasterServices();
             RemotingServices.Marshal(ms, "MyRemoteObjectName", typeof(MasterServices));
