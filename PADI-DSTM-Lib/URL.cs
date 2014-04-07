@@ -30,37 +30,6 @@ namespace PADI_DSTM_Lib
             return port;
         }
     }
-    public interface IMasterService
-    {
-        int register();
-        string MetodoOla();
-        int getSlave();
-    }
-    public interface ISlaveService
-    {
-        string MetodoOlaClient();
-        void createPadInt();
-
-    }
-
-    public class PadInt
-    { //read e write may throw TxException.
-        private int value;
-        private int id;
-        public PadInt(int uid)
-        {
-            id = uid;
-        }
-        public int Read()
-        {
-            return value;
-        }
-        public void Write(int value)
-        {
-            this.value = value;
-        }
-
-    }
 
 
 
