@@ -74,6 +74,15 @@ namespace Master
         {
             return master.getSlave(); //TODO
         }
+
+        public bool createPadInt()
+        {
+            return true;
+        }
+        public bool accessPadInt()
+        {
+            return true;
+        }
     }
     public class Master
     {
@@ -107,6 +116,13 @@ namespace Master
         public MasterServices getMasterServices()
         {
             return ms;
+        }
+        public bool createPadInt() {
+            return true;
+        }
+        public bool accessPadInt()
+        {
+            return true;
         }
 
     }

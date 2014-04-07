@@ -83,6 +83,8 @@ namespace PADI_DSTM_Lib
             int register();
             string MetodoOla();
             int getSlave();
+            bool createPadInt();
+            bool accessPadInt();
         }
         public interface ISlaveService
         {
