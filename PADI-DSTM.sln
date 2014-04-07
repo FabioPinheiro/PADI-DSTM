@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Master", "Master\Master.csproj", "{5EC2CBAC-D87A-4001-97B5-506E29676939}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Salve", "Salve\Salve.csproj", "{E9CD4E61-BB17-4BCE-A352-884D6B3A13AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Slave", "Salve\Slave.csproj", "{E9CD4E61-BB17-4BCE-A352-884D6B3A13AA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{CB327B92-555B-472F-8535-7C0B601EC412}"
 EndProject
