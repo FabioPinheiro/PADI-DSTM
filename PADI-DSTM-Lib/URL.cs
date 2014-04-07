@@ -44,7 +44,7 @@ namespace PADI_DSTM_Lib
     }
 
     public class PadInt
-    {
+    { //read e write may throw TxException.
         private int value;
         private int id;
         public PadInt(int uid)
