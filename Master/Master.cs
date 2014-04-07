@@ -38,7 +38,7 @@ namespace Master
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new MasterForm());
             }
-            if (args[0] == "1")
+            if (/*args[0] == "1" ||*/ true)
             {
                 System.Console.WriteLine("#BEGIN SLAVE# YELLOW");
                 Slave slave = new Slave();
@@ -89,11 +89,16 @@ namespace Master
             return master.getSlave(); //TODO
         }
 
-        public bool createPadInt()
+        public bool createPadInt(int uid)
         {
             return true;
         }
-        public bool accessPadInt()
+        public bool accessPadInt(int uid)
+        {
+            return true;
+        }
+
+        public bool getPadInt(int uid)
         {
             return true;
         }
@@ -150,6 +155,15 @@ namespace Master
         public void createPadInt()
         {
         }
+        public bool accessPadInt(int uid)
+        {
+            return true;
+        }
+        public bool getPadInt(int uid)
+        {
+            return true;
+        }
+
 
     }
 
@@ -157,14 +171,14 @@ namespace Master
     {
         public TcpChannel channelToOut; //change to a list or something of tcpChannel
         public TcpChannel channelListening;
-        SlaveServices cs;
+        //SlaveServices cs;
         IDictionary propBag;
         private int port;
 
         public Slave()
         {
             channelToOut = new TcpChannel();
-            ChannelServices.RegisterChannel(channelToOut, false);
+            //ChannelServices.RegisterChannel(channelToOut, false);
             propBag = new Hashtable();
             propBag["name"] = ""; // "Each channel must have a unique name. Set this property to an empty string ("" or String.Empty) 
             //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME

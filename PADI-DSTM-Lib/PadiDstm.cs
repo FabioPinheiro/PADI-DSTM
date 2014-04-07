@@ -13,6 +13,8 @@ namespace PADI_DSTM_Lib
     public class PadiDstm
     {
         private static int port = 0;
+        private IMasterService master;
+        private ISlaveService slave; // some slave
         public static bool Init()
         { //so é feito uma vez aka por o Master up
             TcpChannel channel = new TcpChannel();
@@ -51,6 +53,7 @@ namespace PADI_DSTM_Lib
         }
         public static bool Status()
         {
+            //fala com o master
             return true;
         }
         public static bool Fail(string URL)
@@ -66,13 +69,17 @@ namespace PADI_DSTM_Lib
             return true;
         }
 
+
         PadInt CreatePadInt(int uid)
         {
+
+            master.createPadInt(uid); //change to slave and number of args
             return new PadInt(uid);
         }
 
         PadInt AccessPadInt(int uid)
         {
+            slave.getPadInt(uid);
             return new PadInt(uid);
         }
     }
@@ -83,13 +90,16 @@ namespace PADI_DSTM_Lib
             int register();
             string MetodoOla();
             int getSlave();
-            bool createPadInt();
-            bool accessPadInt();
+            bool createPadInt(int uid);
+            bool accessPadInt(int uid);
+            bool getPadInt(int uid);
         }
         public interface ISlaveService
         {
             string MetodoOlaClient();
             void createPadInt();
+            bool accessPadInt(int uid);
+            bool getPadInt(int uid);
 
         }
 
@@ -112,5 +122,23 @@ namespace PADI_DSTM_Lib
 
         }
 
-    
+        public class TxException : System.Exception
+        {
+
+        }
+        public class Transaction
+        {
+            //guarda os objectos acedidos. aka todos
+            
+            //begin aka construtor
+            //abort
+            //commit
+            //access
+            //create
+
+            
+
+
+        }
+ 
 }
