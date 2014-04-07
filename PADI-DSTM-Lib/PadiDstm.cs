@@ -8,11 +8,11 @@ namespace PADI_DSTM_Lib
 {
     class PadiDstm
     {
-        public bool Init() { //so é feito uma vez
+        public bool Init() { //so é feito uma vez aka por o Master up
             return true;
         }
         public bool TxBegin()
-        {
+        { //vai ao master e pede um slave, liga-se ao slave.
             return true;
         }
         public bool TxCommit() { 
