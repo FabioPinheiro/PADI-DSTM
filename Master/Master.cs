@@ -28,15 +28,29 @@ namespace Master
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            if (args[0] == "0")
+            {
+                System.Console.WriteLine("MASTER IN THE HOUSE");
 
-            System.Console.WriteLine("MASTER IN THE HOUSE");
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new MasterForm());
+            }
+            if (args[0] == "1")
+            {
+                System.Console.WriteLine("#BEGIN SLAVE# YELLOW");
+                Slave slave = new Slave();
+                slave.registSlave();
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MasterForm());
+                System.Console.WriteLine("#SLAVE# Wainting press enter to leave");
 
+                System.Console.Read();
+                System.Console.WriteLine("#END SLAVE# PEACE OUT");
+            }
+
+            System.Console.WriteLine("EEEEEEEEEEEEEEEEEEEEEEEEENNNNNNNNNNNNNNNNNNNNNNDDDDDDDDDDDDDDDDDDDDDDddd");
 
         
         }
@@ -123,6 +137,61 @@ namespace Master
         public bool accessPadInt()
         {
             return true;
+        }
+
+    }
+
+    class SlaveServices : MarshalByRefObject, ISlaveService
+    {
+        public string MetodoOlaClient()
+        {
+            return "ola cliente :D";
+        }
+        public void createPadInt()
+        {
+        }
+
+    }
+
+    class Slave
+    {
+        public TcpChannel channelToOut; //change to a list or something of tcpChannel
+        public TcpChannel channelListening;
+        SlaveServices cs;
+        IDictionary propBag;
+        private int port;
+
+        public Slave()
+        {
+            channelToOut = new TcpChannel();
+            ChannelServices.RegisterChannel(channelToOut, false);
+            propBag = new Hashtable();
+            propBag["name"] = ""; // "Each channel must have a unique name. Set this property to an empty string ("" or String.Empty) 
+            //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
+
+        }
+        public void registSlave()
+        {
+            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
+            if (obj == null)
+                System.Console.WriteLine("Could not locate server");
+            //System.Console.WriteLine("Could not locate server");
+            else
+            {
+                System.Console.WriteLine(obj.MetodoOla());
+                port = obj.register();
+                System.Console.WriteLine("porto " + port);
+                createChannel(port);
+
+            }
+        }
+        public void createChannel(int port)
+        {
+            propBag["port"] = port;
+            channelListening = new TcpChannel(propBag, null, null);
+            ChannelServices.RegisterChannel(channelListening, false);
+            SlaveServices cs = new SlaveServices();
+            RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));
         }
 
     }
