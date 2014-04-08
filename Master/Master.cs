@@ -118,6 +118,7 @@ namespace Master
         SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value to be decided ; o port identifica o slave.
 
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //check this
+        SortedList<int, SortedList<int, PadInt>> myResponsability = new SortedList<int, SortedList<int, PadInt>>();
         int port = 8087;
         int roundRobin = 0;
         int numberOfSlaves = 0;
@@ -135,34 +136,45 @@ namespace Master
         }
         public int getSlave()
         {
-            return slaves[roundRobin++ % numberOfSlaves];
+            System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin++ % numberOfSlaves);
+            return slaves[8088 + (roundRobin++ % numberOfSlaves)];
         }
         public MasterServices getMasterServices()
         {
             return ms;
         }
         public PadInt createPadInt(int uid) {
+            System.Console.WriteLine("Vamos escrever");
             PadInt aux= null;
             int location = whereIsPadInt(uid);
-            if (location != -1)
+            System.Console.WriteLine("begin location " + location);
+            if (location == -1)
             { //Not assigned, get them!!
                 System.Console.WriteLine("O Master cria: " + uid + "E fica com a parte " + uid%101 + " da hash table");
+                location = uid % 101;
                 padIntsLocation[location] = port;
-                aux= new PadInt(uid);
-                padInts.Add(uid, aux);
+                myResponsability.Add(location, new SortedList<int, PadInt>());
+                System.Console.WriteLine("location "+ location + "key in new pie " + myResponsability.ContainsKey(location));
+                aux = new PadInt(uid);
+                myResponsability[location].Add(uid, aux);
                 return aux;
             }
             else
             {
-                if (hashPadInts(uid)) { 
-                //create here;
+                if (hashPadInts(uid))
+                {
+                    //create here;
                     System.Console.WriteLine("O Master cria: " + uid + "E fica com a parte " + uid % 101 + " da hash table");
 
                     aux = new PadInt(uid);
-                    padInts.Add(uid, aux);
+                    myResponsability[location].Add(uid, aux);
                     return aux;
                 }
-                //create aboard
+                else
+                {
+                    System.Console.WriteLine("Cria noutro sitio");
+                    //create aboard, create TCP connection and stuff!
+                }
             }
             return aux;
         }
@@ -174,11 +186,19 @@ namespace Master
             return new PadInt(uid); //Correct this
         }
         public bool hashPadInts(int uid) {
-            return true;
+            if(myResponsability.ContainsKey(uid%101))
+                return true;
+            return false;
         }
         public int whereIsPadInt(int uid) {
             int aux;
-            if(padIntsLocation.TryGetValue(uid%101, out aux))
+            int location = uid%101;
+            System.Console.WriteLine("location in Where is Pad Int " + location);
+            System.Console.WriteLine("key " + myResponsability.ContainsKey(location));
+            
+            if (myResponsability.ContainsKey(location))
+                return location;
+            if (padIntsLocation.TryGetValue(location, out aux)) //need to connect to new server!
                 return aux;
             return -1; // means that that type of uid%PrimeNumber does not exist at this moment! 
         }
