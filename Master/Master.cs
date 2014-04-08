@@ -88,6 +88,7 @@ namespace Master
 
         public bool createPadInt(int uid)
         {
+            System.Console.WriteLine("estamos a criar isto: "+ uid);
             return true;
         }
         public bool accessPadInt(int uid)
@@ -107,11 +108,12 @@ namespace Master
 
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         Hashtable padIntsSortedLists = new Hashtable(); //tem sorted lists que contem padInts
-        SortedList slaves = new SortedList(); //key port, value to be decided ; o port identifica o slave.
+        SortedList padInts = new SortedList(); // key Padint ID; Value valor.
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
 
 
-        //SortedList padInts = new SortedList(); // key Padint ID; Value valor.
+        SortedList slaves = new SortedList(); //key port, value to be decided ; o port identifica o slave.
+
         Hashtable padIntsLocation = new Hashtable(); //check this
         int port = 8087;
 
@@ -145,12 +147,17 @@ namespace Master
 
     class SlaveServices : MarshalByRefObject, ISlaveService
     {
+        Slave slave;
+        public SlaveServices(Slave aux) {
+            slave = aux;
+        }
         public string MetodoOlaClient()
         {
             return "ola cliente :D";
         }
-        public void createPadInt()
+        public void createPadInt(int uid)
         {
+            slave.createPadInt(uid);
         }
         public bool accessPadInt(int uid)
         {
@@ -168,9 +175,13 @@ namespace Master
     {
         public TcpChannel channelToOut; //change to a list or something of tcpChannel
         public TcpChannel channelListening;
-        //SlaveServices cs;
+        SlaveServices cs;
         IDictionary propBag;
         private int port;
+        //############# EXISTE EM TODOS OS SERVIDORES ###############################
+        Hashtable padIntsSortedLists = new Hashtable(); //tem sorted lists que contem padInts
+        SortedList padInts = new SortedList(); // key Padint ID; Value valor.
+        //############# EXISTE EM TODOS OS SERVIDORES ###############################
 
         public Slave()
         {
@@ -179,7 +190,7 @@ namespace Master
             propBag = new Hashtable();
             propBag["name"] = ""; // "Each channel must have a unique name. Set this property to an empty string ("" or String.Empty) 
             //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
-
+            cs = new SlaveServices(this);
         }
         public void registSlave()
         {
@@ -201,9 +212,13 @@ namespace Master
             propBag["port"] = port;
             channelListening = new TcpChannel(propBag, null, null);
             ChannelServices.RegisterChannel(channelListening, false);
-            SlaveServices cs = new SlaveServices();
             RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));
         }
+        public void createPadInt(int uid) {
+            System.Console.WriteLine("O slave cria: " + uid);
+            padInts.Add(uid, new PadInt(uid));
+        }
+        //create access padInt
 
     }
 }

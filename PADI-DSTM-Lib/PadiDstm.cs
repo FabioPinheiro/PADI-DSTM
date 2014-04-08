@@ -13,19 +13,19 @@ namespace PADI_DSTM_Lib
     public class PadiDstm
     {
         private static int port = 0;
-        private IMasterService master;
-        private ISlaveService slave; // some slave
+        private static IMasterService master;
+        private static ISlaveService slave; // some slave
         public static bool Init()
         { //so é feito uma vez aka por o Master up
             TcpChannel channel = new TcpChannel();
             ChannelServices.RegisterChannel(channel, false);
-            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
-            if (obj == null)
+            master = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
+            if (master == null)
                 return false;
             //System.Console.WriteLine("Could not locate server");
             else
             {
-                port = obj.getSlave();
+                port = master.getSlave();
                 return true;
 
             }
@@ -33,8 +33,8 @@ namespace PADI_DSTM_Lib
         public static bool TxBegin()
         { //Liga-se ao slave e começa uma transacçºao. falta começar uma transacção.
             TcpChannel channel = new TcpChannel();
-            ISlaveService obj = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:8088/MyRemoteObjectName");
-            if (obj == null)
+            slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:8088/MyRemoteObjectName");
+            if (slave == null)
                 return false;
             else
             {
@@ -70,17 +70,18 @@ namespace PADI_DSTM_Lib
         }
 
 
-        PadInt CreatePadInt(int uid)
+        public static PadInt CreatePadInt(int uid)
         {
 
             master.createPadInt(uid); //change to slave and number of args
+            slave.createPadInt(uid);
             return new PadInt(uid);
         }
 
-        PadInt AccessPadInt(int uid)
+        public static PadInt AccessPadInt(int uid)
         {
             slave.getPadInt(uid);
-            return new PadInt(uid);
+            return new PadInt(uid); //change this.
         }
     }
 
@@ -97,7 +98,7 @@ namespace PADI_DSTM_Lib
         public interface ISlaveService
         {
             string MetodoOlaClient();
-            void createPadInt();
+            void createPadInt(int uid);
             bool accessPadInt(int uid);
             bool getPadInt(int uid);
 
@@ -118,6 +119,10 @@ namespace PADI_DSTM_Lib
             public void Write(int value)
             {
                 this.value = value;
+            }
+            public String toString() {
+
+                return "ID= "+ id + "valor= " + value;
             }
 
         }

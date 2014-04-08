@@ -52,7 +52,18 @@ namespace Client
 
         private void button4_Click(object sender, EventArgs e)
         {
+            //create
+            String s = textBox1.Text;
+            int aux = Convert.ToInt32(s);
+            PadiDstm.CreatePadInt(aux);
+        }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+            String s = textBox1.Text;
+            int aux = Convert.ToInt32(s);
+            PadInt coisa = PadiDstm.AccessPadInt(aux);
+             this.richTextBox1.Text += "\r\n" + coisa.toString();
         }
     }
 }
