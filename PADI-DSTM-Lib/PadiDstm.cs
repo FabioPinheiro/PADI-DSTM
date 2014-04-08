@@ -92,19 +92,20 @@ namespace PADI_DSTM_Lib
             int register();
             string MetodoOla();
             int getSlave();
-            bool createPadInt(int uid);
-            bool accessPadInt(int uid);
-            bool getPadInt(int uid);
+            PadInt createPadInt(int uid);
+            PadInt accessPadInt(int uid);
+            PadInt getPadInt(int uid);
+            PadInt getExternalPadInt(int uid);
         }
         public interface ISlaveService
         {
             string MetodoOlaClient();
-            void createPadInt(int uid);
-            bool accessPadInt(int uid);
-            bool getPadInt(int uid);
+            PadInt createPadInt(int uid);
+            PadInt accessPadInt(int uid);
+            PadInt getPadInt(int uid);
 
         }
-
+        [Serializable]
         public class PadInt
         { //read e write may throw TxException.
             private int value;

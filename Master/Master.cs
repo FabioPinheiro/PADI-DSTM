@@ -89,20 +89,21 @@ namespace Master
         public PadInt createPadInt(int uid)
         {
             System.Console.WriteLine("estamos a criar isto: "+ uid);
-            return true;
+            return new PadInt(uid);
         }
         public PadInt accessPadInt(int uid)
         {
-            return true;
+            return new PadInt(uid);
         }
 
         public PadInt getPadInt(int uid)
         {
-            return true;
+            return new PadInt(uid);
         }
         public PadInt getExternalPadInt(int uid){
             return master.getExternalPadInt(uid);
         }
+        
     }
     public class Master
     {
@@ -149,6 +150,7 @@ namespace Master
             return new PadInt(uid); //Correct this
         }
 
+
     }
 
     class SlaveServices : MarshalByRefObject, ISlaveService
@@ -167,14 +169,14 @@ namespace Master
         }
         public PadInt accessPadInt(int uid)
         {
-            
-            return slave.getPadInt(uid);
+
+            return slave.accessPadInt(uid);
         }
         public PadInt getPadInt(int uid)
         {
             //check this
             if(hasPadInt(uid)){
-                return slave.getPadInt(uid);
+                return slave.accessPadInt(uid);
             }
             return getExternalPadInt(uid);
         }
@@ -234,14 +236,14 @@ namespace Master
         }
         public PadInt createPadInt(int uid) {
             System.Console.WriteLine("O slave cria: " + uid);
-            PadInt aux = new PadInt(uid)
+            PadInt aux = new PadInt(uid);
             padInts.Add(uid, aux);
             return aux;
         }
         //create access padInt
         public PadInt accessPadInt(int uid)
         {
-            PadInt aux = padInts[uid];
+            PadInt aux = (PadInt) padInts[uid];
             return aux;
         }
         public PadInt getExternalPadInt(int uid){
