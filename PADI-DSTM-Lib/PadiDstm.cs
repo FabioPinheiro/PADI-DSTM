@@ -161,12 +161,15 @@ namespace PADI_DSTM_Lib
                 id = Convert.ToString(idServer) + ":" + Convert.ToString(timeStramp);
             }
 
-            public bool CreatePadInt(int uid)
+            public PadInt CreatePadInt(int uid)
             {
                 PadInt aux = remotingAccessPadInt(uid, true);
-                if (aux == null)
-                    return false;
-                else return true;
+                if (aux != null)
+                {
+                    poolPadInt.Add(uid, aux);
+                    return aux;
+                }
+                else return null;
             }
 
             public PadInt AccessPadInt(int uid)
