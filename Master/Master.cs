@@ -107,8 +107,9 @@ namespace Master
     public class Master
     {
         TcpChannel channel = new TcpChannel(8086);
+        TcpChannel channelOut;
         MasterServices ms;
-
+        IDictionary propBag;
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         Hashtable padIntsSortedLists = new Hashtable(); //tem sorted lists que contem padInts
         SortedList<int,PadInt> padInts = new SortedList<int,PadInt>(); // key Padint ID; Value valor.
@@ -126,6 +127,11 @@ namespace Master
         public Master() {
             ms = new MasterServices(this);
             ChannelServices.RegisterChannel(channel, false);
+            channelOut = new TcpChannel();
+            //ChannelServices.RegisterChannel(channelToOut, false);
+            propBag = new Hashtable();
+            propBag["name"] = ""; // "Each channel must have a unique name. Set this property to an empty string ("" or String.Empty) 
+            //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
 
         }
         public int registSlave() {
@@ -173,6 +179,7 @@ namespace Master
                 else
                 {
                     System.Console.WriteLine("Cria noutro sitio");
+                    createExternalPadInt(uid, location);
                     //create aboard, create TCP connection and stuff!
                 }
             }
@@ -202,6 +209,18 @@ namespace Master
                 return aux;
             return -1; // means that that type of uid%PrimeNumber does not exist at this moment! 
         }
+        private PadInt createExternalPadInt(int uid, int location) {
+            
+            return new PadInt(uid);
+        }
+
+        public void createChannel(int port)
+        {
+            propBag["port"] = port;
+            channelOut = new TcpChannel(propBag, null, null);
+            ChannelServices.RegisterChannel(channelOut, false);
+        }
+
 
     }
 
