@@ -65,5 +65,17 @@ namespace Client
             PadInt coisa = PadiDstm.AccessPadInt(aux);
              this.richTextBox1.Text += "\r\n" + coisa.toString();
         }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            String Suid = textBox1.Text;
+            int uid = Convert.ToInt32(Suid);
+            String Svalue = textBox2.Text;
+            int value = Convert.ToInt32(Svalue);
+            PadInt coisa = PadiDstm.AccessPadInt(uid);
+            coisa.Write(value);
+
+
+        }
     }
 }
