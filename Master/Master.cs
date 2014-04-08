@@ -88,8 +88,7 @@ namespace Master
 
         public PadInt createPadInt(int uid)
         {
-            System.Console.WriteLine("estamos a criar isto: "+ uid);
-            return new PadInt(uid);
+            return master.createPadInt(uid);
         }
         public PadInt accessPadInt(int uid)
         {
@@ -112,14 +111,16 @@ namespace Master
 
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         Hashtable padIntsSortedLists = new Hashtable(); //tem sorted lists que contem padInts
-        SortedList padInts = new SortedList(); // key Padint ID; Value valor.
+        SortedList<int,PadInt> padInts = new SortedList<int,PadInt>(); // key Padint ID; Value valor.
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
 
 
-        SortedList slaves = new SortedList(); //key port, value to be decided ; o port identifica o slave.
+        SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value to be decided ; o port identifica o slave.
 
-        Hashtable padIntsLocation = new Hashtable(); //check this
+        SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //check this
         int port = 8087;
+        int roundRobin = 0;
+        int numberOfSlaves = 0;
 
         public Master() {
             ms = new MasterServices(this);
@@ -128,19 +129,42 @@ namespace Master
         }
         public int registSlave() {
             port++;
+            numberOfSlaves++;
             slaves.Add(port, port); //TODO correct this
             return port;
         }
         public int getSlave()
         {
-            return (int) slaves.GetByIndex(0); //Correct this.
+            return slaves[roundRobin++ % numberOfSlaves];
         }
         public MasterServices getMasterServices()
         {
             return ms;
         }
         public PadInt createPadInt(int uid) {
-            return new PadInt(uid);
+            PadInt aux= null;
+            int location = whereIsPadInt(uid);
+            if (location != -1)
+            { //Not assigned, get them!!
+                System.Console.WriteLine("O Master cria: " + uid + "E fica com a parte " + uid%101 + " da hash table");
+                padIntsLocation[location] = port;
+                aux= new PadInt(uid);
+                padInts.Add(uid, aux);
+                return aux;
+            }
+            else
+            {
+                if (hashPadInts(uid)) { 
+                //create here;
+                    System.Console.WriteLine("O Master cria: " + uid + "E fica com a parte " + uid % 101 + " da hash table");
+
+                    aux = new PadInt(uid);
+                    padInts.Add(uid, aux);
+                    return aux;
+                }
+                //create aboard
+            }
+            return aux;
         }
         public PadInt accessPadInt(int uid)
         {
@@ -149,7 +173,15 @@ namespace Master
         public PadInt getExternalPadInt(int uid){
             return new PadInt(uid); //Correct this
         }
-
+        public bool hashPadInts(int uid) {
+            return true;
+        }
+        public int whereIsPadInt(int uid) {
+            int aux;
+            if(padIntsLocation.TryGetValue(uid%101, out aux))
+                return aux;
+            return -1; // means that that type of uid%PrimeNumber does not exist at this moment! 
+        }
 
     }
 
