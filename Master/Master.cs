@@ -382,7 +382,7 @@ namespace Master
         }
         public PadInt getExternalPadInt(int uid)
         {
-            return master.getExternalPadInt(uid);
+            return master.getExternalPadInt(uid);//REVER!! NAO FUNCIONA!!
         }
         private bool isMine(int uid)
         {
