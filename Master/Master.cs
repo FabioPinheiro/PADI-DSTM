@@ -86,19 +86,22 @@ namespace Master
             return master.getSlave(); //TODO
         }
 
-        public bool createPadInt(int uid)
+        public PadInt createPadInt(int uid)
         {
             System.Console.WriteLine("estamos a criar isto: "+ uid);
             return true;
         }
-        public bool accessPadInt(int uid)
+        public PadInt accessPadInt(int uid)
         {
             return true;
         }
 
-        public bool getPadInt(int uid)
+        public PadInt getPadInt(int uid)
         {
             return true;
+        }
+        public PadInt getExternalPadInt(int uid){
+            return master.getExternalPadInt(uid);
         }
     }
     public class Master
@@ -135,12 +138,15 @@ namespace Master
         {
             return ms;
         }
-        public bool createPadInt() {
-            return true;
+        public PadInt createPadInt(int uid) {
+            return new PadInt(uid);
         }
-        public bool accessPadInt()
+        public PadInt accessPadInt(int uid)
         {
-            return true;
+            return new PadInt(uid);
+        }
+        public PadInt getExternalPadInt(int uid){
+            return new PadInt(uid); //Correct this
         }
 
     }
@@ -155,17 +161,28 @@ namespace Master
         {
             return "ola cliente :D";
         }
-        public void createPadInt(int uid)
+        public PadInt createPadInt(int uid)
         {
-            slave.createPadInt(uid);
+            return slave.createPadInt(uid);
         }
-        public bool accessPadInt(int uid)
+        public PadInt accessPadInt(int uid)
         {
-            return true;
+            
+            return slave.getPadInt(uid);
         }
-        public bool getPadInt(int uid)
+        public PadInt getPadInt(int uid)
         {
-            return true;
+            //check this
+            if(hasPadInt(uid)){
+                return slave.getPadInt(uid);
+            }
+            return getExternalPadInt(uid);
+        }
+        private bool hasPadInt(int uid){
+            return true; //correct this
+        }
+        private PadInt getExternalPadInt(int uid){
+            return new PadInt(uid);
         }
 
 
@@ -176,6 +193,7 @@ namespace Master
         public TcpChannel channelToOut; //change to a list or something of tcpChannel
         public TcpChannel channelListening;
         SlaveServices cs;
+        IMasterService master;
         IDictionary propBag;
         private int port;
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
@@ -194,14 +212,14 @@ namespace Master
         }
         public void registSlave()
         {
-            IMasterService obj = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
-            if (obj == null)
+            master = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
+            if (master == null)
                 System.Console.WriteLine("Could not locate server");
             //System.Console.WriteLine("Could not locate server");
             else
             {
-                System.Console.WriteLine(obj.MetodoOla());
-                port = obj.register();
+                System.Console.WriteLine(master.MetodoOla());
+                port = master.register();
                 System.Console.WriteLine("porto " + port);
                 createChannel(port);
 
@@ -214,11 +232,21 @@ namespace Master
             ChannelServices.RegisterChannel(channelListening, false);
             RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));
         }
-        public void createPadInt(int uid) {
+        public PadInt createPadInt(int uid) {
             System.Console.WriteLine("O slave cria: " + uid);
-            padInts.Add(uid, new PadInt(uid));
+            PadInt aux = new PadInt(uid)
+            padInts.Add(uid, aux);
+            return aux;
         }
         //create access padInt
+        public PadInt accessPadInt(int uid)
+        {
+            PadInt aux = padInts[uid];
+            return aux;
+        }
+        public PadInt getExternalPadInt(int uid){
+            return master.getExternalPadInt(uid);
+        }
 
     }
 }
