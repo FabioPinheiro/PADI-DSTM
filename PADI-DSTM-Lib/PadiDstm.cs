@@ -81,7 +81,7 @@ namespace PADI_DSTM_Lib
         public static PadInt AccessPadInt(int uid)
         {
             PadInt teste;
-            teste = slave.getPadInt(uid);
+            teste = slave.accessPadInt(uid);
             return teste;
         }
     }
