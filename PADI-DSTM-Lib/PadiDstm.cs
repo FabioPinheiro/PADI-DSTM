@@ -73,7 +73,7 @@ namespace PADI_DSTM_Lib
         public static PadInt CreatePadInt(int uid)
         {
 
-            master.createPadInt(uid); //change to slave and number of args
+            //master.createPadInt(uid); //change to slave and number of args
             slave.createPadInt(uid);
             return new PadInt(uid);
         }
