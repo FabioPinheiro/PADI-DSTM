@@ -150,7 +150,12 @@ namespace PADI_DSTM_Lib
         {
             public static PadInt remotingAccessPadInt(int uid, bool toCreate)
             {
-                //se
+                //TODO
+                //se toCreate == true
+                //devolve null se já existir OU SE A VERSÂO != "none:0"; caso contrario devolve o PadInt
+                
+                //se toCreate == false
+                //delvolve o PadInt se existir E se a versão  for diferente de "none:0"
                 return null;
             }
             private String id = null;
