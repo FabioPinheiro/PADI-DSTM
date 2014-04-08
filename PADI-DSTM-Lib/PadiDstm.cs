@@ -108,22 +108,32 @@ namespace PADI_DSTM_Lib
         [Serializable]
         public class PadInt
         { //read e write may throw TxException.
+            private String version = "none:0";
             private int value;
             private int id;
+            private bool readedAux = false;/*for client*/
+            private bool writedAux = false;/*for client*/
+            private int valueAux;/*for client*/
             public PadInt(int uid)
             {
                 id = uid;
             }
-            public int Read()
+            public int Read()/*for client*/
             {
-                return value;
+                if (writedAux == false)
+                {
+                    readedAux = true;
+                    return value;
+                }
+                else return valueAux;
             }
-            public void Write(int value)
+            public void Write(int value)/*for client*/
             {
+                writedAux = true;
                 this.value = value;
             }
             public String toString() {
-
+                //return "PadIntTransaction: value=" + value + " readed=" + readed + " writed=" + writed + " ; padInt:" + padInt.toString();
                 return "ID= "+ id + "valor= " + value;
             }
 
@@ -131,10 +141,43 @@ namespace PADI_DSTM_Lib
 
         public class TxException : System.Exception
         {
-
+            //TODO
         }
+
         public class Transaction
         {
+            public static PadInt remotingAccessPadInt(int uid, bool toCreate)
+            {
+                //se
+                return null;
+            }
+            private String id = null;
+            private SortedList<int, PadInt> poolPadInt = new SortedList<int, PadInt>();
+
+            Transaction(int idServer, int timeStramp)
+            {
+                id = Convert.ToString(idServer) + ":" + Convert.ToString(timeStramp);
+            }
+
+            public bool CreatePadInt(int uid)
+            {
+                PadInt aux = remotingAccessPadInt(uid, true);
+                if (aux == null)
+                    return false;
+                else return true;
+            }
+
+            public PadInt AccessPadInt(int uid)
+            {
+                if (poolPadInt.ContainsKey(uid))
+                    return poolPadInt[uid];
+                else {
+                    PadInt aux = remotingAccessPadInt(uid,false);
+                    poolPadInt.Add(aux.id;aux);
+                    return aux;
+                } 
+            }
+            
             //guarda os objectos acedidos. aka todos
             
             //begin aka construtor
