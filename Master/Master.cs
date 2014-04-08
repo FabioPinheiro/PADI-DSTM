@@ -16,29 +16,24 @@ namespace Master
     static class Program
     {
 
-     /*   String nick;
-        String location;
 
-        public void register(String username, String url)
-        {
-            nick = username;
-            location = url; //Check this :D
-        }*/
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
         static void Main(string[] args)
         {
+
+            System.Console.WriteLine(args[0]);
+            System.Console.ReadLine();
             if (args[0] == "0")
             {
                 System.Console.WriteLine("MASTER IN THE HOUSE");
 
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new MasterForm());
+                Master master = new Master();
+                MasterServices ms = master.getMasterServices();
+                RemotingServices.Marshal(ms, "MyRemoteObjectName", typeof(MasterServices));
+                System.Console.WriteLine("Estou vivo");
+                System.Console.ReadLine();
+                
             }
-            if (/*args[0] == "1" ||*/ true)
+            if (args[0] == "1")
             {
                 System.Console.WriteLine("#BEGIN SLAVE# YELLOW");
                 Slave slave = new Slave();
@@ -49,6 +44,8 @@ namespace Master
                 System.Console.Read();
                 System.Console.WriteLine("#END SLAVE# PEACE OUT");
             }
+
+
 
             System.Console.WriteLine("EEEEEEEEEEEEEEEEEEEEEEEEENNNNNNNNNNNNNNNNNNNNNNDDDDDDDDDDDDDDDDDDDDDDddd");
 
