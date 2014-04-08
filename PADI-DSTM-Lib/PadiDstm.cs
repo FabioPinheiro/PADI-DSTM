@@ -114,6 +114,7 @@ namespace PADI_DSTM_Lib
             private bool readedAux = false;/*for client*/
             private bool writedAux = false;/*for client*/
             private int valueAux;/*for client*/
+            public getID
             public PadInt(int uid)
             {
                 id = uid;
@@ -173,7 +174,7 @@ namespace PADI_DSTM_Lib
                     return poolPadInt[uid];
                 else {
                     PadInt aux = remotingAccessPadInt(uid,false);
-                    poolPadInt.Add(aux.id;aux);
+                    poolPadInt.Add(uid,aux);
                     return aux;
                 } 
             }
