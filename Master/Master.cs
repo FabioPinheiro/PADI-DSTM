@@ -146,6 +146,13 @@ namespace Master
             ChannelServices.RegisterChannel(channelOut, false);
         }
 
+        public bool setMine(int port,int hash){
+            //for a avisar todos os slaves que os numeros com a hash <hash> pertencem ao slave com o port <port>
+            //slave.setResponsability(port, hash)
+            
+            return true;
+        }
+
 
     }
 

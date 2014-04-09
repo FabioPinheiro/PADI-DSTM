@@ -100,5 +100,9 @@ namespace Master
             return master.getExternalPadInt(uid);
         }
 
+        public bool setMine(int port, int hash) {
+            return master.setMine(port, hash);
+        }
+
     }
 }
