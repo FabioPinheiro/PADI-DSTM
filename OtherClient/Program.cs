@@ -32,8 +32,6 @@ namespace OtherClient
             res = PadiDstm.TxBegin();
             pi_a = PadiDstm.AccessPadInt(0);
             pi_b = PadiDstm.AccessPadInt(1);
-            pi_a.Write(36);
-            pi_b.Write(37);
             Console.WriteLine("a = " + pi_a.Read());
             Console.WriteLine("b = " + pi_b.Read());
             /*PadiDstm.Status();

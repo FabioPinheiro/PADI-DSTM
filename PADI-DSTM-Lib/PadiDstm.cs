@@ -16,6 +16,7 @@ namespace PADI_DSTM_Lib
         private static int port = 0;
         private static IMasterService master;
         private static ISlaveService slave; // some slave
+        private static Transaction tx;
         public static bool Init()
         { //so é feito uma vez aka por o Master up
             TcpChannel channel = new TcpChannel();
@@ -35,6 +36,7 @@ namespace PADI_DSTM_Lib
         { //Liga-se ao slave e começa uma transacçºao. falta começar uma transacção.
             TcpChannel channel = new TcpChannel();
             slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:"+port+"/MyRemoteObjectName");
+            tx = new Transaction(port,DateTime.Now.ToString("s"));
             if (slave == null)
                 return false;
             else
@@ -219,7 +221,7 @@ namespace PADI_DSTM_Lib
 
         public String getTransactionID() { return this.transactionID; }
 
-        Transaction(int idServer, int timeStramp) { transactionID = Convert.ToString(idServer) + ":" + Convert.ToString(timeStramp); }
+        public Transaction(int idServer, String timeStramp) { transactionID = Convert.ToString(idServer) + ":" + timeStramp; }
 
 
         private bool lockAllPadInt()
