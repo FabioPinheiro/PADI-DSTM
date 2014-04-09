@@ -37,7 +37,7 @@ namespace Master
             port++;
             numberOfSlaves++;
             slaves.Add(port-1, port-1); //TODO correct this
-            return port;
+            return port-1;
         }
         public int getSlave()
         {
