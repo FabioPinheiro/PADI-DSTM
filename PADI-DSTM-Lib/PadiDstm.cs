@@ -94,12 +94,15 @@ namespace PADI_DSTM_Lib
             int getSlave();
             PadInt createPadInt(int uid);
             PadInt accessPadInt(int uid);
+            bool setMine(int port, int hash);
+
         }
         public interface ISlaveService
         {
             string MetodoOlaClient();
             PadInt createPadInt(int uid);
             PadInt accessPadInt(int uid);
+            bool setResponsability(int port, int hash);
         }
         [Serializable]
         public class PadInt

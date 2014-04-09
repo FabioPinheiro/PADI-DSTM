@@ -27,23 +27,12 @@ namespace Master
 
             return slave.accessPadInt(uid);
         }
-        public PadInt getPadInt(int uid)
-        {
-            //check this
-            if (hasPadInt(uid))
-            {
-                return slave.accessPadInt(uid);
-            }
-            return getExternalPadInt(uid);
-        }
+       
         private bool hasPadInt(int uid)
         {
             return true; //correct this
         }
-        private PadInt getExternalPadInt(int uid)
-        {
-            return new PadInt(uid);
-        }
+
         public bool setResponsability(int port, int hash) {
             return slave.setResponsability(port, hash);
         }
@@ -92,16 +81,6 @@ namespace Master
         {
             return new PadInt(uid);
         }
-
-        public PadInt getPadInt(int uid)
-        {
-            return new PadInt(uid);
-        }
-        public PadInt getExternalPadInt(int uid)
-        {
-            return master.getExternalPadInt(uid);
-        }
-
         public bool setMine(int port, int hash) {
             return master.setMine(port, hash);
         }

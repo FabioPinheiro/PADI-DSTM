@@ -15,9 +15,9 @@ namespace Master
     class Slave
     {
         //CONSTANTES
-        private static const int MINE = 0;
-        private static const int MYPRIME = 101;
-        private static const int NOONE = -1;
+        private const int MINE = 0;
+        private const int MYPRIME = 101;
+        private const int NONE = -1;
 
         public TcpChannel channelToOut; //change to a list or something of tcpChannel
         public TcpChannel channelListening;
@@ -26,14 +26,9 @@ namespace Master
         IDictionary propBag;
         private int port;
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
-        // Hashtable padIntsSortedLists = new Hashtable(); //tem sorted lists que contem padInts
-        //SortedList padInts = new SortedList(); // key Padint ID; Value valor.
+        SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key is the hash, value is the port of the slave that is responsable for that hash
+        SortedList<int, SortedList<int, PadInt>> myResponsability = new SortedList<int, SortedList<int, PadInt>>(); //key is the hash, value is a list of PadiInt's stored in this master
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
-        SortedList<int, List<int>> slaves = new SortedList<int, List<int>>(); //key port, value list of the hashes that the slave is responsible ; o port identifica o slave.
-
-        SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //check this
-        SortedList<int, SortedList<int, PadInt>> myResponsability = new SortedList<int, SortedList<int, PadInt>>();
-
 
         public Slave()
         {
@@ -61,8 +56,7 @@ namespace Master
         }
         public int getSlave()
         {
-            //            System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin % numberOfSlaves);
-            return master.getSlave();//slaves[8088 + (roundRobin++ % numberOfSlaves)]; //FIXME
+            return master.getSlave();//FIXME
         }
         public void createChannel(int port)
         {
@@ -86,9 +80,11 @@ namespace Master
             }
             else
             {
-                if (location == NOONE)
+                if (location == NONE)
                 {
-                    master.setMine(port, hashUid(uid));
+                    if (!master.setMine(port, hashUid(uid))) {
+                        return null; //pedir ao master onde está
+                    }
                     location = hashUid(uid);
                     padIntsLocation[location] = port;
                     myResponsability.Add(location, new SortedList<int, PadInt>());
@@ -98,21 +94,29 @@ namespace Master
                 }
                 else
                 {
-                    createExternalPadInt(uid, getSlave());
+                    createExternalPadInt(uid, location);
                 }
             }
             return aux;
         }
         //create access padInt
         public PadInt accessPadInt(int uid)
-        {
-            PadInt aux = myResponsability[hashUid(uid)][uid];
+        {   PadInt aux = null;
+            int location = whereIsPadInt(uid);
+            if (location == NONE) {
+                return null;
+            }
+            if (location == MINE)
+            {
+                aux = myResponsability[hashUid(uid)][uid];
+            }
+            else {
+                accessExternalPadInt(uid, location);
+            }
             return aux;
         }
-        public PadInt getExternalPadInt(int uid)
-        {
-            return master.getExternalPadInt(uid);//REVER!! NAO FUNCIONA!!
-        }
+       
+
         private bool isMine(int uid)
         {
             return (port % 2) == ((hashUid(uid)) % 2);
@@ -133,10 +137,10 @@ namespace Master
             System.Console.WriteLine("key " + myResponsability.ContainsKey(location));
 
             if (myResponsability.ContainsKey(location))
-                return 0;
+                return MINE;
             if (padIntsLocation.TryGetValue(location, out aux)) //need to connect to new server!
                 return aux;
-            return -1; // means that that type of uid%PrimeNumber does not exist at this moment! 
+            return NONE; // means that that type of uid%PrimeNumber does not exist at this moment! 
         }
         private PadInt createExternalPadInt(int uid, int location)
         {
