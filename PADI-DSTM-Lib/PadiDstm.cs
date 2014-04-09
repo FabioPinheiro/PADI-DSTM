@@ -96,6 +96,7 @@ namespace PADI_DSTM_Lib
             PadInt accessPadInt(int uid);
             PadInt getPadInt(int uid);
             PadInt getExternalPadInt(int uid);
+            bool setMine(int port, int hash);
         }
         public interface ISlaveService
         {
@@ -103,7 +104,7 @@ namespace PADI_DSTM_Lib
             PadInt createPadInt(int uid);
             PadInt accessPadInt(int uid);
             PadInt getPadInt(int uid);
-
+            public bool setResponsability(int port, int hash);
         }
         [Serializable]
         public class PadInt
