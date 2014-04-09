@@ -21,7 +21,7 @@ namespace Master
         MasterServices ms;
         IDictionary propBag;
         SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value to be decided ; o port identifica o slave.
-        SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //check this
+        SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key hash pie; value Port
         SortedList<int, SortedList<int, PadInt>> myResponsability = new SortedList<int, SortedList<int, PadInt>>(); //key rest: value: key port, value PadInt
         int port = 8087;
         int roundRobin = 0;
@@ -53,8 +53,8 @@ namespace Master
             System.Console.WriteLine("Vamos escrever");
             PadInt aux = null;
             int location = whereIsPadInt(uid);
-            System.Console.WriteLine("begin location " + location + "  " + uid + " " +  isMine(uid));
-            if (location == -1 && isMine(uid))
+            System.Console.WriteLine("begin location " + location + "  " + uid);
+            if (location == -1)
             { //Not assigned, get them!!
                 System.Console.WriteLine("O Master cria: " + uid + " E fica com a parte " + uid % 101 + " da hash table");
                 location = uid % 101;
@@ -67,7 +67,7 @@ namespace Master
             }
             else
             {
-                if (hashPadInts(uid) && !isMine(uid))
+                if (hashPadInts(uid))
                 {
                     //create here;
                     System.Console.WriteLine("O Master cria: " + uid + " E fica com a parte " + uid % 101 + " da hash table");
@@ -84,10 +84,7 @@ namespace Master
             }
             return aux;
         }
-        private bool isMine(int uid)
-        {
-            return (uid % 2) == 0;
-        }
+
         public PadInt accessPadInt(int uid)
         {
             return new PadInt(uid);
@@ -108,8 +105,10 @@ namespace Master
 
             if (myResponsability.ContainsKey(location))
                 return location;
-            if (padIntsLocation.TryGetValue(location, out aux)) //need to connect to new server!
+            if (padIntsLocation.TryGetValue(location, out aux))
+            { //need to connect to new server!
                 return aux;
+            }
             return -1; // means that that type of uid%PrimeNumber does not exist at this moment! 
         }
         private PadInt createExternalPadInt(int uid, int location)
@@ -133,13 +132,25 @@ namespace Master
                 Console.WriteLine(kvp.Value);
                 Console.WriteLine(kvp.Key);
             }*/
-            foreach (KeyValuePair<int, int> kvp in slaves)
+
+            //ve se está na lista de responsabilidades
+            if (slaves.ContainsKey(hash))
             {
-                Console.WriteLine("comunica com " + kvp.Key);
-                ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
-                slave.setResponsability(port, hash);
+                return false;
             }
-            return true;
+            else
+            {
+                //add a lista
+                slaves.Add(port, hash);
+                //envia a info para todos: Melhorar se houver tempo
+                foreach (KeyValuePair<int, int> kvp in slaves)
+                {
+                    Console.WriteLine("comunica com " + kvp.Key);
+                    ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
+                    slave.setResponsability(port, hash);
+                }
+                return true;
+            }
         }
 
 
