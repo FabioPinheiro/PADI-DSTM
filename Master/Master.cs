@@ -12,10 +12,19 @@ using System.Collections;
 
 namespace Master
 {
-    
+
 
     public class Master
     {
+        //CONSTANTES
+        private const int MINE = 0;
+        private const int MYPRIME = 101;
+        private const int NONE = -1;
+        private const int LIVE = 10;
+        private const int FROZEN = 0;
+        private const int DETH = -1;
+        int status;
+
         TcpChannel channel = new TcpChannel(8086);
         TcpChannel channelOut;
         MasterServices ms;
@@ -31,6 +40,7 @@ namespace Master
         {
             ms = new MasterServices(this);
             ChannelServices.RegisterChannel(channel, false);
+            status = LIVE;
         }
         public int registSlave()
         {
@@ -124,7 +134,8 @@ namespace Master
         }
 
 
-        public bool setMine(int port, int hash){
+        public bool setMine(int port, int hash)
+        {
             //for a avisar todos os slaves que os numeros com a hash <hash> pertencem ao slave com o port <port>
             //slave.setResponsability(port, hash)
             /*foreach (KeyValuePair<int, int> kvp in slaves)
@@ -153,10 +164,22 @@ namespace Master
             }
         }
 
+        public bool freeze(String url)
+        {
+            ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
+            slave.freeze();
+            return true;
+        }
+        public bool recover(String url)
+        {
+            ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
+            slave.recover();
+            return true;
+        }
 
     }
 
 
 
-   
+
 }

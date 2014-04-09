@@ -27,14 +27,25 @@ namespace Master
 
             return slave.accessPadInt(uid);
         }
-       
+
         private bool hasPadInt(int uid)
         {
             return true; //correct this
         }
 
-        public bool setResponsability(int port, int hash) {
+        public bool setResponsability(int port, int hash)
+        {
             return slave.setResponsability(port, hash);
+        }
+
+        public bool freeze()
+        {
+            return slave.freeze();
+        }
+
+        public bool recover()
+        {
+            return slave.recover();
         }
 
     }
@@ -81,8 +92,18 @@ namespace Master
         {
             return new PadInt(uid);
         }
-        public bool setMine(int port, int hash) {
+        public bool setMine(int port, int hash)
+        {
             return master.setMine(port, hash);
+        }
+        public bool freeze(String url)
+        {
+            return master.freeze(url);
+        }
+
+        public bool recover(String url)
+        {
+            return master.recover(url);
         }
 
     }

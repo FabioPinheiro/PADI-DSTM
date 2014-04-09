@@ -18,6 +18,10 @@ namespace Master
         private const int MINE = 0;
         private const int MYPRIME = 101;
         private const int NONE = -1;
+        private const int LIVE = 10;
+        private const int FROZEN = 0;
+        private const int DETH = -1;
+        static int status;
 
         public TcpChannel channelToOut; //change to a list or something of tcpChannel
         public TcpChannel channelListening;
@@ -53,7 +57,29 @@ namespace Master
                 createChannel(port);
 
             }
+            status = LIVE;
         }
+
+        public bool recover()
+        {
+            status = LIVE;
+            return true;
+        }
+
+        public bool freeze()
+        {
+            status = FROZEN;
+            return true;
+        }
+        public void frozenHandler()
+        {
+            while (status == FROZEN)
+            {
+                System.Threading.Thread.Sleep(500);
+                System.Console.WriteLine(status);
+            }
+        }
+
         public int getSlave()
         {
             return master.getSlave();//FIXME
@@ -67,10 +93,11 @@ namespace Master
         }
         public PadInt createPadInt(int uid)
         {
+            frozenHandler();
             System.Console.WriteLine("Vamos escrever");
             PadInt aux = null;
             int location = whereIsPadInt(uid);
-            System.Console.WriteLine("begin location " + location + " uid  " + uid + " isMine: " + isMine(uid) + " port: " + port);
+            System.Console.WriteLine("begin location " + location + " uid  " + uid + " port: " + port);
 
             if (location == MINE)
             {
@@ -105,6 +132,7 @@ namespace Master
         //create access padInt
         public PadInt accessPadInt(int uid)
         {
+            frozenHandler();
             PadInt aux = null;
             int location = whereIsPadInt(uid);
             if (location == NONE)
@@ -120,12 +148,6 @@ namespace Master
                 accessExternalPadInt(uid, location);
             }
             return aux;
-        }
-
-
-        private bool isMine(int uid)
-        {
-            return (port % 2) == ((hashUid(uid)) % 2);
         }
 
 

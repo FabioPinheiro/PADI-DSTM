@@ -1,23 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Channels.Tcp;
-using System.Runtime.Remoting.Channels;
-using System.Net.Sockets;
 using PADI_DSTM_Lib;
 
-namespace Client
+namespace OtherClient
 {
-    static class Program
+    class Program
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
- 
-        //[STAThread]
         static void Main()
         {
             /*Application.EnableVisualStyles();
@@ -33,9 +24,10 @@ namespace Client
             PadInt pi_a = PadiDstm.CreatePadInt(0);
             PadInt pi_b = PadiDstm.CreatePadInt(1);
             res = PadiDstm.TxCommit();
-            res = PadiDstm.Freeze("tcp://localhost:8087/MyRemoteObjectName");
-            Console.ReadLine();
+
+            Console.WriteLine("Before recover");
             res = PadiDstm.Recover("tcp://localhost:8087/MyRemoteObjectName");
+            Console.WriteLine("After recover");
 
             res = PadiDstm.TxBegin();
             pi_a = PadiDstm.AccessPadInt(0);
