@@ -144,6 +144,11 @@ namespace PADI_DSTM_Lib
                 return "ID= "+ id + "valor= " + value;
             }
 
+
+            internal void getLock(Transaction transaction)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public class TxException : System.Exception
@@ -153,6 +158,25 @@ namespace PADI_DSTM_Lib
 
         public class Transaction
         {
+            private String id = null;
+            private SortedList<int, PadInt> poolPadInt = new SortedList<int, PadInt>();
+
+            Transaction(int idServer, int timeStramp)
+            {
+                id = Convert.ToString(idServer) + ":" + Convert.ToString(timeStramp);
+            }
+
+            public bool TxCommit()
+            {
+                foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
+                {
+                    pair.Value.getLock(this);
+                    Console.WriteLine(pair.Value);
+                    Console.WriteLine(pair.Key);
+                }
+                return true; //FIXME!
+            }
+
             public static PadInt remotingAccessPadInt(int uid, bool toCreate)
             {
                 //TODO
@@ -163,13 +187,7 @@ namespace PADI_DSTM_Lib
                 //delvolve o PadInt se existir E se a versão  for diferente de "none:0"
                 return null;
             }
-            private String id = null;
-            private SortedList<int, PadInt> poolPadInt = new SortedList<int, PadInt>();
 
-            Transaction(int idServer, int timeStramp)
-            {
-                id = Convert.ToString(idServer) + ":" + Convert.ToString(timeStramp);
-            }
 
             public PadInt CreatePadInt(int uid)
             {
