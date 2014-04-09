@@ -18,11 +18,11 @@ namespace Master
         {
             return "ola cliente :D";
         }
-        public PadInt createPadInt(int uid)
+        public PadIntStored createPadInt(int uid)
         {
             return slave.createPadInt(uid);
         }
-        public PadInt accessPadInt(int uid)
+        public PadIntStored accessPadInt(int uid)
         {
 
             return slave.accessPadInt(uid);
@@ -84,13 +84,13 @@ namespace Master
             return master.getSlave(); //TODO
         }
 
-        public PadInt createPadInt(int uid)
+        public PadIntStored createPadInt(int uid)
         {
             return master.createPadInt(uid);
         }
-        public PadInt accessPadInt(int uid)
+        public PadIntStored accessPadInt(int uid)
         {
-            return new PadInt(uid);
+            return new PadIntStored(uid);
         }
         public bool setMine(int port, int hash)
         {

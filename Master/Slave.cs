@@ -31,7 +31,7 @@ namespace Master
         private int port;
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key is the hash, value is the port of the slave that is responsable for that hash
-        SortedList<int, SortedList<int, PadInt>> myResponsability = new SortedList<int, SortedList<int, PadInt>>(); //key is the hash, value is a list of PadiInt's stored in this master
+        SortedList<int, SortedList<int, PadIntStored>> myResponsability = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
 
         public Slave()
@@ -91,11 +91,11 @@ namespace Master
             ChannelServices.RegisterChannel(channelListening, false);
             RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));
         }
-        public PadInt createPadInt(int uid)
+        public PadIntStored createPadInt(int uid)
         {
             frozenHandler();
             System.Console.WriteLine("Vamos escrever");
-            PadInt aux = null;
+            PadIntStored aux = null;
             int location = whereIsPadInt(uid);
             System.Console.WriteLine("begin location " + location + " uid  " + uid + " port: " + port);
 
@@ -103,7 +103,7 @@ namespace Master
             {
                 if (myResponsability[hashUid(uid)].ContainsKey(uid))
                     return null;
-                aux = new PadInt(uid);
+                aux = new PadIntStored(uid);
                 myResponsability[hashUid(uid)].Add(uid, aux);
                 return aux;
             }
@@ -117,8 +117,8 @@ namespace Master
                     }
                     location = hashUid(uid);
                     padIntsLocation[location] = port;
-                    myResponsability.Add(location, new SortedList<int, PadInt>());
-                    aux = new PadInt(uid);
+                    myResponsability.Add(location, new SortedList<int, PadIntStored>());
+                    aux = new PadIntStored(uid);
                     myResponsability[location].Add(uid, aux);
                     return aux;
                 }
@@ -130,10 +130,10 @@ namespace Master
             return aux;
         }
         //create access padInt
-        public PadInt accessPadInt(int uid)
+        public PadIntStored accessPadInt(int uid)
         {
             frozenHandler();
-            PadInt aux = null;
+            PadIntStored aux = null;
             int location = whereIsPadInt(uid);
             if (location == NONE)
             {
@@ -170,16 +170,16 @@ namespace Master
                 return aux;
             return NONE; // means that that type of uid%PrimeNumber does not exist at this moment! 
         }
-        private PadInt createExternalPadInt(int uid, int location)
+        private PadIntStored createExternalPadInt(int uid, int location)
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-            PadInt aux = slave.createPadInt(uid);
+            PadIntStored aux = slave.createPadInt(uid);
             return aux;
         }
-        private PadInt accessExternalPadInt(int uid, int location)
+        private PadIntStored accessExternalPadInt(int uid, int location)
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-            PadInt aux = slave.accessPadInt(uid);
+            PadIntStored aux = slave.accessPadInt(uid);
             return aux;
         }
 
