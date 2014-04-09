@@ -34,10 +34,9 @@ namespace Master
         }
         public int registSlave()
         {
-            port++;
             numberOfSlaves++;
-            slaves.Add(port-1, port-1); //TODO correct this
-            return port-1;
+            slaves.Add(port, port); //TODO correct this
+            return port++;
         }
         public int getSlave()
         {
