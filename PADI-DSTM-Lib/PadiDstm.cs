@@ -6,6 +6,7 @@ using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading; 
 
 namespace PADI_DSTM_Lib
 {
@@ -104,18 +105,34 @@ namespace PADI_DSTM_Lib
             PadInt accessPadInt(int uid);
             bool setResponsability(int port, int hash);
         }
-        [Serializable]
-        public class PadInt
-        { //read e write may throw TxException.
+
+        [Serializable] //FIXME passar por referencia
+        public class PadIntStored {
             private String version = "none:0";
-            private int value;
             private int id;
-            private bool readedAux = false;/*for client*/
-            private bool writedAux = false;/*for client*/
-            private int valueAux;/*for client*/
-            
-            public bool setVaule(int value, String newVersion, String oldVersion){ //FIXME LOCK
-                if (oldVersion == this.version)
+            private int value;
+            private String lockby = "none";
+            public bool lockPadInt(String lockby) {
+                if (this.lockby == "none")
+                {
+                    this.lockby = lockby;
+                    return true;
+                }
+                else return false;
+            }
+            public bool unlockPadInt(String lockby)
+            {
+                if (this.lockby == lockby)
+                {
+                    this.lockby = "none";
+                    return true;
+                }
+                else return false;
+            }
+
+            public bool setVaule(int value, String newVersion, String oldVersion)
+            { //FIXME LOCK
+                if (oldVersion == this.version &/*&&*/ lockby == newVersion)
                 {
                     version = newVersion;
                     this.value = value;
@@ -124,34 +141,58 @@ namespace PADI_DSTM_Lib
                 else return false;
             }
             public int getID() { return id; }
-            public PadInt(int uid)
-            {
-                id = uid;
-            }
+            public int getValue() { return value; }
+            public String getVersion() { return version; }
+            public String toString() { return ">ID=" + id + " valor=" + value + " version=" + version + " lockby=" + lockby + "; "; }
+        }
+
+        public class PadInt // só existe no salve
+        { //read e write may throw TxException.
+
+            private PadIntStored padInt;
+            private String accessVersion;
+            private bool readedAux = false;/*for client*/
+            private bool writedAux = false;/*for client*/
+            private int valueAux;/*for client*/
+
+            public PadInt(PadIntStored padInt) {this.padInt = padInt; this.accessVersion = padInt.getVersion(); }
+           
             public int Read()/*for client*/
             {
                 if (writedAux == false)
                 {
                     readedAux = true;
-                    return value;
+                    return padInt.getValue();
                 }
                 else return valueAux;
             }
+
             public void Write(int value)/*for client*/
             {
                 writedAux = true;
-                this.value = value;
-            }
-            public String toString() {
-                //return "PadIntTransaction: value=" + value + " readed=" + readed + " writed=" + writed + " ; padInt:" + padInt.toString();
-                return "ID= "+ id + "valor= " + value;
+                this.valueAux = value;
             }
 
+            public String toString() { return ">PadIntStored:" + padInt.toString() + " >PadInt: valueAux=" + valueAux + " readedAux=" + readedAux + " writedAux=" + writedAux + ";"; }
 
-            internal void getLock(Transaction transaction)
-            {
-                throw new NotImplementedException();
+            public bool setLock(Transaction transaction) { return padInt.lockPadInt(transaction.getTransactionID()); } //FIXME
+            public bool setUnlock(Transaction transaction) {
+                if (padInt.unlockPadInt(transaction.getTransactionID()))
+                    return true;
+                else throw new NotImplementedException(); //FIXME!!!!!!!!!!!!!!!!!!
+            } //FIXME
+            public bool commitVaule(Transaction t) {
+                if (readedAux || writedAux)
+                {
+                    //if (padInt.getVersion() == this.accessVersion)
+                    //{
+                    return padInt.setVaule(this.valueAux, t.getTransactionID(), this.accessVersion);
+                    //}
+                }
+                else
+                    return true;//FIXME padInt o PadInt deve ver informado disto ou não? ()alterar a verção
             }
+
         }
 
         public class TxException : System.Exception
@@ -161,23 +202,63 @@ namespace PADI_DSTM_Lib
 
         public class Transaction
         {
-            private String id = null;
+            private String transactionID= null;
             private SortedList<int, PadInt> poolPadInt = new SortedList<int, PadInt>();
+            private int Status = 0; // 1 - in commit!!;
 
-            Transaction(int idServer, int timeStramp)
+            public String getTransactionID() { return this.transactionID; }
+
+            Transaction(int idServer, int timeStramp){ transactionID = Convert.ToString(idServer) + ":" + Convert.ToString(timeStramp);}
+
+
+            private bool lockAllPadInt() {
+                //bool locking = true; //FIXME
+                foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
+                {
+                    if (!pair.Value.setLock(this))
+                        return false;
+                }
+                return true; // consegui fazer look a todo
+            }
+            private bool unlockAllPadInt()
             {
-                id = Convert.ToString(idServer) + ":" + Convert.ToString(timeStramp);
+                //bool locking = true; //FIXME
+                foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
+                {
+                    if (!pair.Value.setUnlock(this))
+                        return false;
+                }
+                return true; // consegui fazer look a todo
+            }
+            public bool TxCommitAUX()//FIXME muitos problemas de consistencia
+            {
+                
+                try
+                {
+                    lockAllPadInt();
+
+                    foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
+                    {
+                        if (!pair.Value.commitVaule(this))
+                            throw new TxException();
+                    }
+                }
+                finally { unlockAllPadInt(); }
+
+                return true;
+
             }
 
             public bool TxCommit()
             {
-                foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
-                {
-                    pair.Value.getLock(this);
-                    Console.WriteLine(pair.Value);
-                    Console.WriteLine(pair.Key);
-                }
-                return true; //FIXME!
+                Task taskA = new Task( () => TxCommitAUX());
+                //ThreadStart ts = new ThreadStart(this.TxCommitAUX()); 
+                Task<bool>[] taskArray = { Task<bool>.Factory.StartNew(() => this.TxCommitAUX()) };
+
+                Console.WriteLine("WAITNG !!!!");
+                taskA.Wait();
+                return taskArray[0].Result;
+                //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
             }
 
             public static PadInt remotingAccessPadInt(int uid, bool toCreate)
