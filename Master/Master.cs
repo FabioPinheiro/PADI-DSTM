@@ -118,8 +118,9 @@ namespace Master
         }
         private PadInt accessExternalPadInt(int uid, int location)
         {
-
-            return new PadInt(uid);
+            ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+            PadInt aux = slave.accessPadInt(uid);
+            return aux;
         }
 
 
