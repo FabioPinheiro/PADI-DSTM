@@ -134,14 +134,14 @@ namespace Master
             }*/
 
             //ve se está na lista de responsabilidades
-            if (slaves.ContainsKey(hash))
+            if (padIntsLocation.ContainsKey(hash))
             {
                 return false;
             }
             else
             {
                 //add a lista
-                slaves.Add(port, hash);
+                padIntsLocation.Add(hash, port);
                 //envia a info para todos: Melhorar se houver tempo
                 foreach (KeyValuePair<int, int> kvp in slaves)
                 {
