@@ -114,7 +114,16 @@ namespace PADI_DSTM_Lib
             private bool readedAux = false;/*for client*/
             private bool writedAux = false;/*for client*/
             private int valueAux;/*for client*/
-
+            
+            public bool setVaule(int value, String newVersion, String oldVersion){ //FIXME LOCK
+                if (oldVersion == this.version)
+                {
+                    version = newVersion;
+                    this.value = value;
+                    return true;
+                }
+                else return false;
+            }
             public int getID() { return id; }
             public PadInt(int uid)
             {
