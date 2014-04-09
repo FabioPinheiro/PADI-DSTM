@@ -94,16 +94,12 @@ namespace PADI_DSTM_Lib
             int getSlave();
             PadInt createPadInt(int uid);
             PadInt accessPadInt(int uid);
-            PadInt getPadInt(int uid);
-            PadInt getExternalPadInt(int uid);
         }
         public interface ISlaveService
         {
             string MetodoOlaClient();
             PadInt createPadInt(int uid);
             PadInt accessPadInt(int uid);
-            PadInt getPadInt(int uid);
-
         }
         [Serializable]
         public class PadInt
@@ -183,7 +179,7 @@ namespace PADI_DSTM_Lib
                     poolPadInt.Add(uid, aux);
                     return aux;
                 }
-                else return null;
+                else return null; //!!Confirmado (Fabio: segundo o rafael)
             }
 
             public PadInt AccessPadInt(int uid)
@@ -197,7 +193,7 @@ namespace PADI_DSTM_Lib
                         poolPadInt.Add(uid, aux);
                         return aux;
                     }
-                    else return null; //!!!!!!!!!!!!! cofirmar TODO FIXME
+                    else return null; //!!Confirmado (Fabio: segundo o rafael)
                 } 
             }
             
@@ -206,8 +202,6 @@ namespace PADI_DSTM_Lib
             //begin aka construtor
             //abort
             //commit
-            //access
-            //create
 
             
 
