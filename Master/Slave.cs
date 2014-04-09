@@ -74,6 +74,8 @@ namespace Master
 
             if (location == MINE)
             {
+                if (myResponsability[hashUid(uid)].ContainsKey(uid))
+                    return null;
                 aux = new PadInt(uid);
                 myResponsability[hashUid(uid)].Add(uid, aux);
                 return aux;
@@ -82,7 +84,8 @@ namespace Master
             {
                 if (location == NONE)
                 {
-                    if (!master.setMine(port, hashUid(uid))) {
+                    if (!master.setMine(port, hashUid(uid)))
+                    {
                         return null; //pedir ao master onde está
                     }
                     location = hashUid(uid);
@@ -101,21 +104,24 @@ namespace Master
         }
         //create access padInt
         public PadInt accessPadInt(int uid)
-        {   PadInt aux = null;
+        {
+            PadInt aux = null;
             int location = whereIsPadInt(uid);
-            if (location == NONE) {
+            if (location == NONE)
+            {
                 return null;
             }
             if (location == MINE)
             {
                 aux = myResponsability[hashUid(uid)][uid];
             }
-            else {
+            else
+            {
                 accessExternalPadInt(uid, location);
             }
             return aux;
         }
-       
+
 
         private bool isMine(int uid)
         {
