@@ -44,7 +44,9 @@ namespace Master
         {
             return new PadInt(uid);
         }
-
+        public bool setResponsability(int port, int hash) {
+            return slave.setResponsability(port, hash);
+        }
 
     }
     public class MasterServices : MarshalByRefObject, IMasterService
