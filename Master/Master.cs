@@ -20,16 +20,9 @@ namespace Master
         TcpChannel channelOut;
         MasterServices ms;
         IDictionary propBag;
-        //############# EXISTE EM TODOS OS SERVIDORES ###############################
-        Hashtable padIntsSortedLists = new Hashtable(); //tem sorted lists que contem padInts
-        SortedList<int, PadInt> padInts = new SortedList<int, PadInt>(); // key Padint ID; Value valor.
-        //############# EXISTE EM TODOS OS SERVIDORES ###############################
-
-
         SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value to be decided ; o port identifica o slave.
-
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //check this
-        SortedList<int, SortedList<int, PadInt>> myResponsability = new SortedList<int, SortedList<int, PadInt>>();
+        SortedList<int, SortedList<int, PadInt>> myResponsability = new SortedList<int, SortedList<int, PadInt>>(); //key rest: value: key port, value PadInt
         int port = 8087;
         int roundRobin = 0;
         int numberOfSlaves = 0;
@@ -38,24 +31,18 @@ namespace Master
         {
             ms = new MasterServices(this);
             ChannelServices.RegisterChannel(channel, false);
-            //channelOut = new TcpChannel();
-            //ChannelServices.RegisterChannel(channelToOut, false);
-            propBag = new Hashtable();
-            propBag["name"] = ""; // "Each channel must have a unique name. Set this property to an empty string ("" or String.Empty) 
-            //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
-
         }
         public int registSlave()
         {
             port++;
             numberOfSlaves++;
-            slaves.Add(port, port); //TODO correct this
+            slaves.Add(port-1, port-1); //TODO correct this
             return port;
         }
         public int getSlave()
         {
             System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin % numberOfSlaves);
-            return slaves[8088 + (roundRobin++ % numberOfSlaves)];
+            return slaves[8087 + (roundRobin++ % numberOfSlaves)];
         }
         public MasterServices getMasterServices()
         {
@@ -105,10 +92,7 @@ namespace Master
         {
             return new PadInt(uid);
         }
-        public PadInt getExternalPadInt(int uid)
-        {
-            return new PadInt(uid); //Correct this
-        }
+
         public bool hashPadInts(int uid)
         {
             if (myResponsability.ContainsKey(uid % 101))
@@ -139,17 +123,22 @@ namespace Master
 
             return new PadInt(uid);
         }
-        public void createChannel(int port)
-        {
-            propBag["port"] = port;
-            channelOut = new TcpChannel(propBag, null, null);
-            ChannelServices.RegisterChannel(channelOut, false);
-        }
 
-        public bool setMine(int port,int hash){
+
+        public bool setMine(int port, int hash){
             //for a avisar todos os slaves que os numeros com a hash <hash> pertencem ao slave com o port <port>
             //slave.setResponsability(port, hash)
-            
+            /*foreach (KeyValuePair<int, int> kvp in slaves)
+            {
+                Console.WriteLine(kvp.Value);
+                Console.WriteLine(kvp.Key);
+            }*/
+            foreach (KeyValuePair<int, int> kvp in slaves)
+            {
+                Console.WriteLine("comunica com " + kvp.Key);
+                ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
+                slave.setResponsability(port, hash);
+            }
             return true;
         }
 

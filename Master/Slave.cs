@@ -88,7 +88,7 @@ namespace Master
             {
                 if (location == NOONE)
                 {
-                    master.setMine(port, hash);
+                    master.setMine(port, hashUid(uid));
                     location = hashUid(uid);
                     padIntsLocation[location] = port;
                     myResponsability.Add(location, new SortedList<int, PadInt>());
@@ -151,6 +151,18 @@ namespace Master
             return aux;
         }
 
+        public bool setResponsability(int port, int hash)
+        {
+            if (padIntsLocation.ContainsKey(hash))
+            {
+                return false;
+            }
+            else
+            {
+                padIntsLocation[hash] = port;
+                return true;
+            }
+        }
 
         private int hashUid(int uid)
         {
