@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
@@ -9,64 +10,68 @@ using System.Net.Sockets;
 using PADI_DSTM_Lib;
 using System.Collections;
 
-
 namespace Master
 {
-    
-
-    public class Master
+    class Slave
     {
-        TcpChannel channel = new TcpChannel(8086);
-        TcpChannel channelOut;
-        MasterServices ms;
+        public TcpChannel channelToOut; //change to a list or something of tcpChannel
+        public TcpChannel channelListening;
+        SlaveServices cs;
+        IMasterService master;
         IDictionary propBag;
+        private int port;
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         Hashtable padIntsSortedLists = new Hashtable(); //tem sorted lists que contem padInts
-        SortedList<int, PadInt> padInts = new SortedList<int, PadInt>(); // key Padint ID; Value valor.
+        SortedList padInts = new SortedList(); // key Padint ID; Value valor.
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
-
-
         SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value to be decided ; o port identifica o slave.
 
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //check this
         SortedList<int, SortedList<int, PadInt>> myResponsability = new SortedList<int, SortedList<int, PadInt>>();
-        int port = 8087;
-        int roundRobin = 0;
-        int numberOfSlaves = 0;
 
-        public Master()
+
+        public Slave()
         {
-            ms = new MasterServices(this);
-            ChannelServices.RegisterChannel(channel, false);
-            //channelOut = new TcpChannel();
+            channelToOut = new TcpChannel();
             //ChannelServices.RegisterChannel(channelToOut, false);
             propBag = new Hashtable();
             propBag["name"] = ""; // "Each channel must have a unique name. Set this property to an empty string ("" or String.Empty) 
             //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
-
+            cs = new SlaveServices(this);
         }
-        public int registSlave()
+        public void registSlave()
         {
-            port++;
-            numberOfSlaves++;
-            slaves.Add(port, port); //TODO correct this
-            return port;
+            master = (IMasterService)Activator.GetObject(typeof(IMasterService), "tcp://localhost:8086/MyRemoteObjectName");
+            if (master == null)
+                System.Console.WriteLine("Could not locate server");
+            //System.Console.WriteLine("Could not locate server");
+            else
+            {
+                System.Console.WriteLine(master.MetodoOla());
+                port = master.register();
+                System.Console.WriteLine("porto " + port);
+                createChannel(port);
+
+            }
         }
         public int getSlave()
         {
-            System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin % numberOfSlaves);
-            return slaves[8088 + (roundRobin++ % numberOfSlaves)];
+            //            System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin % numberOfSlaves);
+            return master.getSlave();//slaves[8088 + (roundRobin++ % numberOfSlaves)]; //FIXME
         }
-        public MasterServices getMasterServices()
+        public void createChannel(int port)
         {
-            return ms;
+            propBag["port"] = port;
+            channelListening = new TcpChannel(propBag, null, null);
+            ChannelServices.RegisterChannel(channelListening, false);
+            RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));
         }
         public PadInt createPadInt(int uid)
         {
             System.Console.WriteLine("Vamos escrever");
             PadInt aux = null;
             int location = whereIsPadInt(uid);
-            System.Console.WriteLine("begin location " + location + "  " + uid + " " +  isMine(uid));
+            System.Console.WriteLine("begin location " + location + " uid  " + uid + " isMine: " + isMine(uid) + " port: " + port);
             if (location == -1 && isMine(uid))
             { //Not assigned, get them!!
                 System.Console.WriteLine("O Master cria: " + uid + " E fica com a parte " + uid % 101 + " da hash table");
@@ -80,10 +85,10 @@ namespace Master
             }
             else
             {
-                if (hashPadInts(uid) && !isMine(uid))
+                if (hashPadInts(uid) && isMine(uid))
                 {
                     //create here;
-                    System.Console.WriteLine("O Master cria: " + uid + " E fica com a parte " + uid % 101 + " da hash table");
+                    System.Console.WriteLine("O Master cria: " + uid + " E adiciona a sua responsabilidade " + uid % 101 + " da hash table");
                     aux = new PadInt(uid);
                     myResponsability[location].Add(uid, aux);
                     return aux;
@@ -97,18 +102,22 @@ namespace Master
             }
             return aux;
         }
-        private bool isMine(int uid)
-        {
-            return (uid % 2) == 0;
-        }
+        //create access padInt
         public PadInt accessPadInt(int uid)
         {
-            return new PadInt(uid);
+            PadInt aux = myResponsability[uid % 101][uid];
+            return aux;
         }
         public PadInt getExternalPadInt(int uid)
         {
-            return new PadInt(uid); //Correct this
+            return master.getExternalPadInt(uid);//REVER!! NAO FUNCIONA!!
         }
+        private bool isMine(int uid)
+        {
+            return (port % 2) == ((uid % 101) % 2);
+        }
+
+
         public bool hashPadInts(int uid)
         {
             if (myResponsability.ContainsKey(uid % 101))
@@ -136,20 +145,10 @@ namespace Master
         }
         private PadInt accessExternalPadInt(int uid, int location)
         {
-
-            return new PadInt(uid);
+            ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+            PadInt aux = slave.createPadInt(uid);
+            return aux;
         }
-        public void createChannel(int port)
-        {
-            propBag["port"] = port;
-            channelOut = new TcpChannel(propBag, null, null);
-            ChannelServices.RegisterChannel(channelOut, false);
-        }
-
 
     }
-
-
-
-   
 }
