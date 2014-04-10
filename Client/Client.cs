@@ -35,9 +35,13 @@ namespace Client
             Console.WriteLine("PadInt pi_a = PadiDstm.CreatePadInt(0);");
             PadInt pi_b = PadiDstm.CreatePadInt(1);
             Console.WriteLine("PadInt pi_b = PadiDstm.CreatePadInt(1);");
+            pi_a.Write(36);
+            Console.WriteLine("pi_a.Write(36)");
+            pi_b.Write(37);
+            Console.WriteLine("pi_b.Write(37);");
             res = PadiDstm.TxCommit();
             Console.WriteLine("res = PadiDstm.TxCommit();");
-            res = PadiDstm.Freeze("tcp://localhost:8087/MyRemoteObjectName");
+            //res = PadiDstm.Freeze("tcp://localhost:8087/MyRemoteObjectName");
             Console.WriteLine("res = PadiDstm.Freeze(...)");
 
             PadiDstm.Status();
@@ -48,10 +52,7 @@ namespace Client
             Console.WriteLine("PadiDstm.AccessPadInt(0)");
             pi_b = PadiDstm.AccessPadInt(1);
             Console.WriteLine("PadiDstm.AccessPadInt(1)");
-            pi_a.Write(36);
-            Console.WriteLine("pi_a.Write(36)");
-            pi_b.Write(37);
-            Console.WriteLine("pi_b.Write(37);");
+
             Console.WriteLine("a = " + pi_a.Read());
             Console.WriteLine("b = " + pi_b.Read());
             /*

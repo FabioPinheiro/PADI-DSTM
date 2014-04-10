@@ -51,6 +51,21 @@ namespace Master
         {
             return slave.status();
         }
+
+        public bool setVaule(int uid, int value, String newVersion, String oldVersion)
+        {
+            Console.WriteLine("SET VALUE!! " + value + "  version  " + newVersion);
+            return slave.setVaule(uid, value, newVersion, oldVersion);
+        }
+        public bool unlockPadInt(int uid, String lockby)
+        {
+            return slave.unlockPadInt(uid,lockby);
+        }
+        public bool lockPadInt(int uid, String lockby)
+        {
+            return slave.lockPadInt(uid, lockby);
+        }
+
     }
     public class MasterServices : MarshalByRefObject, IMasterService
     {

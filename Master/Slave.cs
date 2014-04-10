@@ -138,7 +138,7 @@ namespace Master
             {
                 if (myResponsability[hashUid(uid)].ContainsKey(uid))
                 {
-                    return myResponsability[hashUid(uid)][uid].getVersion() == "none:0"?myResponsability[hashUid(uid)][uid] : null;
+                    return myResponsability[hashUid(uid)][uid].getVersion() == "none:0" ? myResponsability[hashUid(uid)][uid] : null;
                 }
                 aux = new PadIntStored(uid);
                 myResponsability[hashUid(uid)].Add(uid, aux);
@@ -186,10 +186,74 @@ namespace Master
             {
                 accessExternalPadInt(uid, location);
             }
-            return aux.getVersion() == "none:0"? null : aux ;
+            return aux.getVersion() == "none:0" ? null : aux;
+        }
+        public bool setVaule(int uid, int value, String newVersion, String oldVersion)
+        {
+            Console.WriteLine("SET VALUE!! " + value + " isMine? " + isMine(uid));
+            if (isMine(uid))
+            {
+                myResponsability[hashUid(uid)][uid].setVaule(value, newVersion, oldVersion);
+                Console.WriteLine("SET VALUE!! " + value + "  version  " + newVersion);
+                return true;
+            }
+            else
+            {
+                int location = whereIsPadInt(uid);
+                if (location == NONE)
+                    return false;
+                else
+                {
+                    ISlaveService slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                    return slaveAUX.setVaule(uid, value, newVersion, oldVersion);
+                }
+
+
+            }
+        }
+        public bool unlockPadInt(int uid, String lockby)
+        {
+            if (isMine(uid))
+            {
+                myResponsability[hashUid(uid)][uid].unlockPadInt(lockby);
+                return true;
+            }
+            else
+            {
+                int location = whereIsPadInt(uid);
+                if (location == NONE)
+                    return false;
+                else
+                {
+                    ISlaveService slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                    return slaveAUX.unlockPadInt(uid,lockby);
+                }
+            }
+        }
+        public bool lockPadInt(int uid, String lockby)
+        {
+            if (isMine(uid))
+            {
+                myResponsability[hashUid(uid)][uid].lockPadInt(lockby);
+                return true;
+            }
+            else
+            {
+                int location = whereIsPadInt(uid);
+                if (location == NONE)
+                    return false;
+                else
+                {
+                    ISlaveService slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                    return slaveAUX.lockPadInt(uid,lockby);
+                }
+            }
         }
 
-
+        public bool isMine(int uid)
+        {
+            return whereIsPadInt(uid) == MINE;
+        }
         public bool hashPadInts(int uid)
         {
             if (myResponsability.ContainsKey(hashUid(uid)))

@@ -35,8 +35,8 @@ namespace PADI_DSTM_Lib
         public static bool TxBegin()
         { //Liga-se ao slave e começa uma transacçºao. falta começar uma transacção.
             TcpChannel channel = new TcpChannel();
-            slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:"+port+"/MyRemoteObjectName");
-            tx = new Transaction(port,DateTime.Now.ToString("s"),slave);
+            slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + port + "/MyRemoteObjectName");
+            tx = new Transaction(port, DateTime.Now.ToString("s"), slave);
             if (slave == null)
                 return false;
             else
@@ -76,8 +76,8 @@ namespace PADI_DSTM_Lib
         {
 
             //master.createPadInt(uid); //change to slave and number of args
-           // PadIntStored pds = slave.createPadInt(uid);
-           // return pds == null ? null : new PadInt(pds);
+            // PadIntStored pds = slave.createPadInt(uid);
+            // return pds == null ? null : new PadInt(pds);
             return tx.CreatePadInt(uid);
         }
 
@@ -110,6 +110,9 @@ namespace PADI_DSTM_Lib
         bool freeze();
         bool recover();
         bool status();
+        bool setVaule(int uid, int value, String newVersion, String oldVersion);
+        bool unlockPadInt(int uid, String lockby);
+        bool lockPadInt(int uid, String lockby);
     }
 
     [Serializable] //FIXME passar por referencia
@@ -145,8 +148,10 @@ namespace PADI_DSTM_Lib
 
         public bool setVaule(int value, String newVersion, String oldVersion)
         { //FIXME LOCK
-            if (oldVersion == this.version &/*&&*/ lockby == newVersion)
+            Console.WriteLine("setVaule!!"+ " lockby:" + lockby + " newVersion: " + newVersion + " oldVersion:" + oldVersion + "  this.version:" + this.version );
+            if (oldVersion == this.version &&/*&&*/ lockby == newVersion)
             {
+                Console.WriteLine("setVaule!! newVersion: " + newVersion + " oldVersion:" + oldVersion);
                 version = newVersion;
                 this.value = value;
                 return true;
@@ -168,27 +173,35 @@ namespace PADI_DSTM_Lib
         private bool writedAux = false;/*for client*/
         private int valueAux;/*for client*/
 
-        public PadInt(PadIntStored padInt) {
+        public PadInt(PadIntStored padInt)
+        {
             this.padInt = padInt;
             this.accessVersion = padInt.getVersion();
             this.valueAux = padInt.getValue();
         }
 
-        public int Read()/*for client*/{ readedAux = true; return padInt.getValue(); }
+        public int Read()/*for client*/{ readedAux = true; return this.valueAux; }
         public void Write(int value)/*for client*/ { writedAux = true; this.valueAux = value; }
         public String toString() { return ">PadIntStored:" + padInt.toString() + " >PadInt: valueAux=" + valueAux + " readedAux=" + readedAux + " writedAux=" + writedAux + ";"; }
 
-        public bool setLock(Transaction transaction) { return padInt.lockPadInt(transaction.getTransactionID()); } //FIXME
-        public bool setUnlock(Transaction transaction)
+        public bool setLock(Transaction transaction, ISlaveService slave)
         {
-            if (padInt.unlockPadInt(transaction.getTransactionID()))
+            return slave.lockPadInt(padInt.getID(), transaction.getTransactionID());
+        } //FIXME
+        public bool setUnlock(Transaction transaction, ISlaveService slave)
+        {
+            if (slave.unlockPadInt(padInt.getID(), transaction.getTransactionID()))
                 return true;
             else throw new NotImplementedException(); //FIXME!!!!!!!!!!!!!!!!!!
         } //FIXME
-        public bool commitVaule(Transaction t)
+        public bool commitVaule(Transaction t, ISlaveService slave)
         {
+            Console.WriteLine(this.toString());
+
             if (readedAux || writedAux)
-                return padInt.setVaule(this.valueAux, t.getTransactionID(), this.accessVersion);
+            {
+                return slave.setVaule(padInt.getID(), this.valueAux, t.getTransactionID(), this.accessVersion);
+            }
             else
                 return true;//FIXME padInt o PadInt deve ver informado disto ou não? ()alterar a verção
         }
@@ -209,7 +222,8 @@ namespace PADI_DSTM_Lib
 
         public String getTransactionID() { return this.transactionID; }
 
-        public Transaction(int idServer, String timeStramp, ISlaveService slave) {
+        public Transaction(int idServer, String timeStramp, ISlaveService slave)
+        {
             transactionID = Convert.ToString(idServer) + ":" + timeStramp;
             this.slave = slave;
         }
@@ -220,7 +234,7 @@ namespace PADI_DSTM_Lib
             //bool locking = true; //FIXME
             foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
             {
-                if (!pair.Value.setLock(this))
+                if (!pair.Value.setLock(this, slave))
                     return false;
             }
             return true; // consegui fazer look a todo
@@ -230,7 +244,7 @@ namespace PADI_DSTM_Lib
             //bool locking = true; //FIXME
             foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
             {
-                if (!pair.Value.setUnlock(this))
+                if (!pair.Value.setUnlock(this, slave))
                     return false;
             }
             return true; // consegui fazer look a todo
@@ -244,13 +258,13 @@ namespace PADI_DSTM_Lib
                 Console.WriteLine("lockAllPadInt()");
                 foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
                 {
-                    if (!pair.Value.commitVaule(this))
+                    if (!pair.Value.commitVaule(this, slave))
                     {
                         Console.WriteLine("throw new TxException();");
                         throw new TxException();
                     }
                 }
-                
+
             }
             finally { unlockAllPadInt(); } ///FIXME return ...
             Console.WriteLine("DONE-TxCommitAUX()");
@@ -313,6 +327,7 @@ namespace PADI_DSTM_Lib
             if (aux != null)
             {
                 poolPadInt.Add(uid, aux);
+                aux.Read();
                 return aux;
             }
             else return null; //!!Confirmado (Fabio: segundo o rafael)
@@ -333,7 +348,7 @@ namespace PADI_DSTM_Lib
                 else return null; //!!Confirmado (Fabio: segundo o rafael)
             }
         }
-                   
+
         //guarda os objectos acedidos. aka todos
 
         //begin aka construtor
