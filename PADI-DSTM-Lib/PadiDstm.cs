@@ -264,23 +264,32 @@ namespace PADI_DSTM_Lib
             return taskArray[0].Result;
             //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
         }
-
-        public PadIntStored remotingAccessPadInt(int uid, bool toCreate)
+        private PadIntStored remotingAccessPadIntStored(int uid, bool toCreate)
+        {
+            if (toCreate)
+                return slave.createPadInt(uid);
+            else return slave.accessPadInt(uid);
+        }
+        public PadInt remotingAccessPadInt(int uid, bool toCreate)
         {
             //se toCreate == true
             //devolve null se já existir OU SE A VERSÂO != "none:0"; caso contrario devolve o PadInt
             //se toCreate == false
             //delvolve o PadInt se existir E se a versão  for diferente de "none:0"
-            PadIntStored padInt;
-            if (toCreate)
+            PadIntStored padIntStored = remotingAccessPadIntStored(uid, toCreate);
+            if (padIntStored != null)
+                return new PadInt(padIntStored);
+            else return null;
+
+            /*if (toCreate)
             {
-                padInt = slave.createPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
-                if (padInt != null)
-                    return padInt;
+                padIntStored = slave.createPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
+                if (padIntStored != null)
+                    return padIntStored;
                 else {
-                    padInt = slave.accessPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
-                    if (padInt.getVersion() == "none:0")
-                        return padInt;
+                    padIntStored = slave.accessPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
+                    if (padIntStored.getVersion() == "none:0")
+                        return padIntStored;
                     else return null;
                 }
             }
@@ -289,7 +298,7 @@ namespace PADI_DSTM_Lib
                 if (padInt.getVersion() != "none:0")
                     return padInt;
                 else return null;
-            }
+            }*/
         }
 
 
