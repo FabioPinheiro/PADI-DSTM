@@ -182,7 +182,8 @@ namespace Master
         {
             try
             {
-                System.Console.WriteLine("Master current status: " + getStatus());
+                
+                printStatus();
                 //envia a info para todos: Melhorar se houver tempo
                 foreach (KeyValuePair<int, int> kvp in slaves)
                 {
@@ -209,6 +210,22 @@ namespace Master
                     return "DETH";
             }            
         }
+        private void printStatus(){
+            System.Console.WriteLine("Master current status: " + getStatus());
+            System.Console.WriteLine(slaves.Count() + " Registed slaves: ");
+            foreach (KeyValuePair<int, int> kvp in slaves)
+            {
+                Console.WriteLine(" - " + kvp.Key + " - Responsible for:");
+                foreach (KeyValuePair<int, int> locationPair in padIntsLocation)
+                {
+                    if(locationPair.Value == kvp.Key)
+                        Console.Write("      " + locationPair.Key + " - ");
+                }
+                Console.WriteLine();
+            }
+            
+        }
+
     }
 
 

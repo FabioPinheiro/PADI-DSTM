@@ -85,6 +85,21 @@ namespace Master
             System.Console.WriteLine("Master current status: " + getStatus());
             return true;
         }
+        private void printStatus()
+        {
+            System.Console.WriteLine("Slave" + port + "current status: " + getStatus());
+            System.Console.WriteLine(myResponsability.Count() + " Registed slaves: ");
+            foreach (KeyValuePair<int, SortedList<int, PadIntStored>> kvp in myResponsability)
+            {
+                Console.WriteLine(" - hash " + kvp.Key + " - Includes:");
+                foreach (KeyValuePair<int, PadIntStored> locationPair in kvp.Value)
+                {
+                     Console.Write("     uid " + locationPair.Key + " - value " + locationPair.Value.getValue());
+                }
+                Console.WriteLine();
+            }
+
+        }
         public bool freeze()
         {
             currentStatus = FROZEN;
@@ -112,10 +127,10 @@ namespace Master
         public PadIntStored createPadInt(int uid)
         {
             frozenHandler();
-            System.Console.WriteLine("Vamos escrever");
+           // System.Console.WriteLine("Vamos escrever");
             PadIntStored aux = null;
             int location = whereIsPadInt(uid);
-            System.Console.WriteLine("begin location " + location + " uid  " + uid + " port: " + port);
+            //System.Console.WriteLine("begin location " + location + " uid  " + uid + " port: " + port);
 
             if (location == MINE)
             {
@@ -179,8 +194,6 @@ namespace Master
         {
             int aux;
             int location = hashUid(uid);
-            System.Console.WriteLine("location in Where is Pad Int " + location);
-            System.Console.WriteLine("key " + myResponsability.ContainsKey(location));
 
             if (myResponsability.ContainsKey(location))
                 return MINE;

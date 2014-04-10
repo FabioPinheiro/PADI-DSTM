@@ -19,8 +19,8 @@ namespace Master
         static void Main(string[] args)
         {
 
-            System.Console.WriteLine(args[0]);
-            System.Console.ReadLine();
+            System.Console.WriteLine("Insert 0 for Master or 1 for Slave:");
+            args[0] = System.Console.ReadLine();
             if (args[0] == "0")
             {
                 System.Console.WriteLine("MASTER IN THE HOUSE");
