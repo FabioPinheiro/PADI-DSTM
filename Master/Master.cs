@@ -192,6 +192,7 @@ namespace Master
                 return true;
             }
             catch (RemotingException e) {
+                System.Console.WriteLine(e.Message);
                 return false;
             }
         }
