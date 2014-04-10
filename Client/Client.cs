@@ -28,12 +28,17 @@ namespace Client
             bool res;
 
             PadiDstm.Init();
-
+            Console.WriteLine("PadiDstm.Init();");
             res = PadiDstm.TxBegin();
+            Console.WriteLine("res = PadiDstm.TxBegin();");
             PadInt pi_a = PadiDstm.CreatePadInt(0);
+            Console.WriteLine("PadInt pi_a = PadiDstm.CreatePadInt(0);");
             PadInt pi_b = PadiDstm.CreatePadInt(1);
+            Console.WriteLine("PadInt pi_b = PadiDstm.CreatePadInt(1);");
             res = PadiDstm.TxCommit();
+            Console.WriteLine("res = PadiDstm.TxCommit();");
             res = PadiDstm.Freeze("tcp://localhost:8087/MyRemoteObjectName");
+            Console.WriteLine("res = PadiDstm.Freeze(...)");
 
             PadiDstm.Status();
             Console.WriteLine("after status call");
