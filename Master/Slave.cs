@@ -94,7 +94,7 @@ namespace Master
                 Console.WriteLine(" - hash " + kvp.Key + " - Includes:");
                 foreach (KeyValuePair<int, PadIntStored> locationPair in kvp.Value)
                 {
-                    Console.Write("     uid " + locationPair.Key + " - value " + locationPair.Value.getValue());
+                    Console.WriteLine("     uid " + locationPair.Key + " - value " + locationPair.Value.getValue() + " version: " + locationPair.Value.getVersion());
                 }
                 Console.WriteLine();
             }
