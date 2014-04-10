@@ -48,9 +48,9 @@ namespace PADI_DSTM_Lib
 
         public static bool TxCommit()
         {
-            return true;
+            return tx.TxCommit();
         }
-        public static bool TxAbort()
+        public static bool TxAbort() //SOMOS CONTRA O ABORTO!! PRO VIDA!!
         {
             return true;
         }
@@ -76,14 +76,14 @@ namespace PADI_DSTM_Lib
         {
 
             //master.createPadInt(uid); //change to slave and number of args
-            PadIntStored pds = slave.createPadInt(uid);
-            return pds == null ? null : new PadInt(pds);
+           // PadIntStored pds = slave.createPadInt(uid);
+           // return pds == null ? null : new PadInt(pds);
+            return tx.CreatePadInt(uid);
         }
 
         public static PadInt AccessPadInt(int uid)
         {
-            PadIntStored pds = slave.accessPadInt(uid);
-            return pds == null ? null : new PadInt(pds);
+            return tx.AccessPadInt(uid);
         }
     }
 
