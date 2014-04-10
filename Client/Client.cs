@@ -38,10 +38,15 @@ namespace Client
             PadiDstm.Status();
             Console.WriteLine("after status call");
             res = PadiDstm.TxBegin();
+            Console.WriteLine("PadiDstm.TxBegin()");
             pi_a = PadiDstm.AccessPadInt(0);
+            Console.WriteLine("PadiDstm.AccessPadInt(0)");
             pi_b = PadiDstm.AccessPadInt(1);
+            Console.WriteLine("PadiDstm.AccessPadInt(1)");
             pi_a.Write(36);
+            Console.WriteLine("pi_a.Write(36)");
             pi_b.Write(37);
+            Console.WriteLine("pi_b.Write(37);");
             Console.WriteLine("a = " + pi_a.Read());
             Console.WriteLine("b = " + pi_b.Read());
             /*
