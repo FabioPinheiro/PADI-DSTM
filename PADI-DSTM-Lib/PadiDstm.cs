@@ -237,30 +237,35 @@ namespace PADI_DSTM_Lib
         }
         public bool TxCommitAUX()//FIXME muitos problemas de consistencia
         {
-
+            Console.WriteLine("TxCommitAUX()");
             try
             {
-                lockAllPadInt();
-
+                lockAllPadInt(); //FIXME return ...
+                Console.WriteLine("lockAllPadInt()");
                 foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
                 {
                     if (!pair.Value.commitVaule(this))
+                    {
+                        Console.WriteLine("throw new TxException();");
                         throw new TxException();
+                    }
                 }
+                
             }
-            finally { unlockAllPadInt(); }
-
+            finally { unlockAllPadInt(); } ///FIXME return ...
+            Console.WriteLine("DONE-TxCommitAUX()");
             return true;
         }
 
         public bool TxCommit()
         {
-            Task taskA = new Task(() => TxCommitAUX());
+            //Task taskA = new Task(() => TxCommitAUX());
             //ThreadStart ts = new ThreadStart(this.TxCommitAUX()); 
             Task<bool>[] taskArray = { Task<bool>.Factory.StartNew(() => this.TxCommitAUX()) };
 
             Console.WriteLine("WAITNG !!!!");
-            taskA.Wait();
+            taskArray[0].Wait();
+            //taskA.Wait();
             return taskArray[0].Result;
             //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
         }
