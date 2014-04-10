@@ -82,7 +82,7 @@ namespace Master
         {
             //
 
-            System.Console.WriteLine("Master current status: " + getStatus());
+            printStatus();
             return true;
         }
         private void printStatus()
@@ -94,7 +94,7 @@ namespace Master
                 Console.WriteLine(" - hash " + kvp.Key + " - Includes:");
                 foreach (KeyValuePair<int, PadIntStored> locationPair in kvp.Value)
                 {
-                     Console.Write("     uid " + locationPair.Key + " - value " + locationPair.Value.getValue());
+                    Console.Write("     uid " + locationPair.Key + " - value " + locationPair.Value.getValue());
                 }
                 Console.WriteLine();
             }
@@ -126,8 +126,10 @@ namespace Master
         }
         public PadIntStored createPadInt(int uid)
         {
+            if (currentStatus == DETH)
+                Environment.Exit(DETH);
             frozenHandler();
-           // System.Console.WriteLine("Vamos escrever");
+            // System.Console.WriteLine("Vamos escrever");
             PadIntStored aux = null;
             int location = whereIsPadInt(uid);
             //System.Console.WriteLine("begin location " + location + " uid  " + uid + " port: " + port);
@@ -135,7 +137,9 @@ namespace Master
             if (location == MINE)
             {
                 if (myResponsability[hashUid(uid)].ContainsKey(uid))
-                    return null;
+                {
+                    return myResponsability[hashUid(uid)][uid].getVersion() == "none:0"?myResponsability[hashUid(uid)][uid] : null;
+                }
                 aux = new PadIntStored(uid);
                 myResponsability[hashUid(uid)].Add(uid, aux);
                 return aux;
@@ -146,7 +150,7 @@ namespace Master
                 {
                     if (!master.setMine(port, hashUid(uid)))
                     {
-                        return null; //pedir ao master onde está
+                        return null;
                     }
                     location = hashUid(uid);
                     padIntsLocation[location] = port;
@@ -165,6 +169,8 @@ namespace Master
         //create access padInt
         public PadIntStored accessPadInt(int uid)
         {
+            if (currentStatus == DETH)
+                Environment.Exit(DETH);
             frozenHandler();
             PadIntStored aux = null;
             int location = whereIsPadInt(uid);
@@ -180,7 +186,7 @@ namespace Master
             {
                 accessExternalPadInt(uid, location);
             }
-            return aux;
+            return aux.getVersion() == "none:0"? null : aux ;
         }
 
 

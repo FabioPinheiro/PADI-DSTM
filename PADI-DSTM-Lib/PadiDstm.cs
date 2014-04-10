@@ -36,7 +36,7 @@ namespace PADI_DSTM_Lib
         { //Liga-se ao slave e começa uma transacçºao. falta começar uma transacção.
             TcpChannel channel = new TcpChannel();
             slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:"+port+"/MyRemoteObjectName");
-            tx = new Transaction(port,DateTime.Now.ToString("s"));
+            tx = new Transaction(port,DateTime.Now.ToString("s"),slave);
             if (slave == null)
                 return false;
             else
