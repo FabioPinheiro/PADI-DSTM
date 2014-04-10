@@ -168,24 +168,14 @@ namespace PADI_DSTM_Lib
         private bool writedAux = false;/*for client*/
         private int valueAux;/*for client*/
 
-        public PadInt(PadIntStored padInt) { this.padInt = padInt; this.accessVersion = padInt.getVersion(); }
-
-        public int Read()/*for client*/
-        {
-            if (writedAux == false)
-            {
-                readedAux = true;
-                return padInt.getValue();
-            }
-            else return valueAux;
+        public PadInt(PadIntStored padInt) {
+            this.padInt = padInt;
+            this.accessVersion = padInt.getVersion();
+            this.valueAux = padInt.getValue();
         }
 
-        public void Write(int value)/*for client*/
-        {
-            writedAux = true;
-            this.valueAux = value;
-        }
-
+        public int Read()/*for client*/{ readedAux = true; return padInt.getValue(); }
+        public void Write(int value)/*for client*/ { writedAux = true; this.valueAux = value; }
         public String toString() { return ">PadIntStored:" + padInt.toString() + " >PadInt: valueAux=" + valueAux + " readedAux=" + readedAux + " writedAux=" + writedAux + ";"; }
 
         public bool setLock(Transaction transaction) { return padInt.lockPadInt(transaction.getTransactionID()); } //FIXME
@@ -198,12 +188,7 @@ namespace PADI_DSTM_Lib
         public bool commitVaule(Transaction t)
         {
             if (readedAux || writedAux)
-            {
-                //if (padInt.getVersion() == this.accessVersion)
-                //{
                 return padInt.setVaule(this.valueAux, t.getTransactionID(), this.accessVersion);
-                //}
-            }
             else
                 return true;//FIXME padInt o PadInt deve ver informado disto ou não? ()alterar a verção
         }
