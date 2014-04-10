@@ -203,12 +203,16 @@ namespace PADI_DSTM_Lib
     public class Transaction
     {
         private String transactionID = null;
+        private ISlaveService slave;
         private SortedList<int, PadInt> poolPadInt = new SortedList<int, PadInt>();
         private int Status = 0; // 1 - in commit!!;
 
         public String getTransactionID() { return this.transactionID; }
 
-        public Transaction(int idServer, String timeStramp) { transactionID = Convert.ToString(idServer) + ":" + timeStramp; }
+        public Transaction(int idServer, String timeStramp, ISlaveService slave) {
+            transactionID = Convert.ToString(idServer) + ":" + timeStramp;
+            this.slave = slave;
+        }
 
 
         private bool lockAllPadInt()
@@ -247,7 +251,6 @@ namespace PADI_DSTM_Lib
             finally { unlockAllPadInt(); }
 
             return true;
-
         }
 
         public bool TxCommit()
@@ -262,15 +265,31 @@ namespace PADI_DSTM_Lib
             //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
         }
 
-        public static PadInt remotingAccessPadInt(int uid, bool toCreate)
+        public PadIntStored remotingAccessPadInt(int uid, bool toCreate)
         {
-            //TODO
             //se toCreate == true
             //devolve null se já existir OU SE A VERSÂO != "none:0"; caso contrario devolve o PadInt
-
             //se toCreate == false
             //delvolve o PadInt se existir E se a versão  for diferente de "none:0"
-            return null;
+            PadIntStored padInt;
+            if (toCreate)
+            {
+                padInt = slave.createPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
+                if (padInt != null)
+                    return padInt;
+                else {
+                    padInt = slave.accessPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
+                    if (padInt.getVersion() == "none:0")
+                        return padInt;
+                    else return null;
+                }
+            }
+            else {
+                padInt = slave.accessPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
+                if (padInt.getVersion() != "none:0")
+                    return padInt;
+                else return null;
+            }
         }
 
 
@@ -300,7 +319,7 @@ namespace PADI_DSTM_Lib
                 else return null; //!!Confirmado (Fabio: segundo o rafael)
             }
         }
-
+                   
         //guarda os objectos acedidos. aka todos
 
         //begin aka construtor
