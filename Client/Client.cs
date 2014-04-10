@@ -34,9 +34,9 @@ namespace Client
             PadInt pi_b = PadiDstm.CreatePadInt(1);
             res = PadiDstm.TxCommit();
             res = PadiDstm.Freeze("tcp://localhost:8087/MyRemoteObjectName");
-            Console.ReadLine();
-            res = PadiDstm.Recover("tcp://localhost:8087/MyRemoteObjectName");
 
+            PadiDstm.Status();
+            Console.WriteLine("after status call");
             res = PadiDstm.TxBegin();
             pi_a = PadiDstm.AccessPadInt(0);
             pi_b = PadiDstm.AccessPadInt(1);
@@ -44,7 +44,7 @@ namespace Client
             pi_b.Write(37);
             Console.WriteLine("a = " + pi_a.Read());
             Console.WriteLine("b = " + pi_b.Read());
-            /*PadiDstm.Status();
+            /*
             // The following 3 lines assume we have 2 servers: one at port 2001 and another at port 2002
             res = PadiDstm.Freeze("tcp://localhost:2001/Server");
             res = PadiDstm.Recover("tcp://localhost:2001/Server");

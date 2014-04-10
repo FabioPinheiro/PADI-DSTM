@@ -47,7 +47,10 @@ namespace Master
         {
             return slave.recover();
         }
-
+        public bool status()
+        {
+            return slave.status();
+        }
     }
     public class MasterServices : MarshalByRefObject, IMasterService
     {
@@ -104,6 +107,10 @@ namespace Master
         public bool recover(String url)
         {
             return master.recover(url);
+        }
+        public bool status()
+        {
+            return master.status();
         }
 
     }

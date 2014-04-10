@@ -16,18 +16,19 @@ namespace OtherClient
             Application.Run(new ClientForm());*/
             Console.WriteLine("PRESS ENTER TO START THE CLIENT");
             Console.ReadLine();
+
             bool res;
 
             PadiDstm.Init();
-
+            Console.WriteLine("Before recover");
+            res = PadiDstm.Recover("tcp://localhost:8087/MyRemoteObjectName");
+            Console.WriteLine("After recover");
             res = PadiDstm.TxBegin();
             PadInt pi_a = PadiDstm.CreatePadInt(0);
             PadInt pi_b = PadiDstm.CreatePadInt(1);
             res = PadiDstm.TxCommit();
 
-            Console.WriteLine("Before recover");
-            res = PadiDstm.Recover("tcp://localhost:8087/MyRemoteObjectName");
-            Console.WriteLine("After recover");
+           
 
             res = PadiDstm.TxBegin();
             pi_a = PadiDstm.AccessPadInt(0);

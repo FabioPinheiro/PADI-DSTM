@@ -57,7 +57,7 @@ namespace PADI_DSTM_Lib
         public static bool Status()
         {
             //fala com o master
-            return true;
+            return master.status(); ;
         }
         public static bool Fail(string URL)
         {
@@ -98,6 +98,7 @@ namespace PADI_DSTM_Lib
         bool setMine(int port, int hash);
         bool freeze(String url);
         bool recover(String url);
+        bool status();
 
     }
     public interface ISlaveService
@@ -108,6 +109,7 @@ namespace PADI_DSTM_Lib
         bool setResponsability(int port, int hash);
         bool freeze();
         bool recover();
+        bool status();
     }
 
     [Serializable] //FIXME passar por referencia

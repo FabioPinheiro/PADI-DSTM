@@ -21,7 +21,7 @@ namespace Master
         private const int LIVE = 10;
         private const int FROZEN = 0;
         private const int DETH = -1;
-        static int status;
+        static int currentStatus;
 
         public TcpChannel channelToOut; //change to a list or something of tcpChannel
         public TcpChannel channelListening;
@@ -57,26 +57,44 @@ namespace Master
                 createChannel(port);
 
             }
-            status = LIVE;
+            currentStatus = LIVE;
         }
-
+        private String getStatus()
+        {
+            switch (currentStatus)
+            {
+                case LIVE:
+                    return "LIVE";
+                case FROZEN:
+                    return "FROZEN";
+                case DETH:
+                    return "DETH";
+                default:
+                    return "DETH";
+            }
+        }
         public bool recover()
         {
-            status = LIVE;
+            currentStatus = LIVE;
             return true;
         }
+        public bool status()
+        {
+            //
 
+            System.Console.WriteLine("Master current status: " + getStatus());
+            return true;
+        }
         public bool freeze()
         {
-            status = FROZEN;
+            currentStatus = FROZEN;
             return true;
         }
         public void frozenHandler()
         {
-            while (status == FROZEN)
+            while (currentStatus == FROZEN)
             {
-                System.Threading.Thread.Sleep(500);
-                System.Console.WriteLine(status);
+                System.Threading.Thread.Sleep(2000);
             }
         }
 

@@ -23,7 +23,7 @@ namespace Master
         private const int LIVE = 10;
         private const int FROZEN = 0;
         private const int DETH = -1;
-        int status;
+        static int currentStatus;
 
         TcpChannel channel = new TcpChannel(8086);
         TcpChannel channelOut;
@@ -40,7 +40,7 @@ namespace Master
         {
             ms = new MasterServices(this);
             ChannelServices.RegisterChannel(channel, false);
-            status = LIVE;
+            currentStatus = LIVE;
         }
         public int registSlave()
         {
@@ -172,11 +172,42 @@ namespace Master
         }
         public bool recover(String url)
         {
+            Console.WriteLine("Faz recover "+url);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
             slave.recover();
             return true;
         }
 
+        public bool status()
+        {
+            try
+            {
+                System.Console.WriteLine("Master current status: " + getStatus());
+                //envia a info para todos: Melhorar se houver tempo
+                foreach (KeyValuePair<int, int> kvp in slaves)
+                {
+                    ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
+                    slave.status();
+                }
+                return true;
+            }
+            catch (RemotingException e) {
+                return false;
+            }
+        }
+
+        private String getStatus() {
+            switch (currentStatus) { 
+                case LIVE:
+                    return "LIVE";
+                case FROZEN:
+                    return "FROZEN";
+                case DETH:
+                    return "DETH";
+                default:
+                    return "DETH";
+            }            
+        }
     }
 
 
