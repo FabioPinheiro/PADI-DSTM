@@ -20,8 +20,8 @@ namespace Master
         {
 
             System.Console.WriteLine("Insert 0 for Master or 1 for Slave:");
-            args[0] = System.Console.ReadLine();
-            if (args[0] == "0")
+            String args1 = System.Console.ReadLine();
+            if (args1 == "0")
             {
                 System.Console.WriteLine("MASTER IN THE HOUSE");
 
@@ -32,7 +32,7 @@ namespace Master
                 System.Console.ReadLine();
 
             }
-            if (args[0] == "1")
+            if (args1 == "1")
             {
                 System.Console.WriteLine("#BEGIN SLAVE# YELLOW");
                 Slave slave = new Slave();
