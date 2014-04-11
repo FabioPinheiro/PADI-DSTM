@@ -497,15 +497,13 @@ namespace PADI_DSTM_Lib
         }
         public static String txCompareTo(String transactionID1, String transactionID2)
         {
-            if (transactionID1.CompareTo(transactionID2) > 0)
-            {
-                return transactionID2;
-            }
-            else if (transactionID1.CompareTo(transactionID2) < 0)
-            {
-                return transactionID1;
-            }
-            else throw new TxException("txCompareTo equal");
+            String str1 = timeFromId(transactionID1);
+            String str2 = timeFromId(transactionID2);
+            int comp = DateTime.Compare(DateTime.Parse(str1), DateTime.Parse(str2));
+            if (comp <= 0)
+                return str1;
+            else
+                return str2;
         }
         public bool AbortTransaction()
         {

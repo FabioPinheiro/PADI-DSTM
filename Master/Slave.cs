@@ -33,7 +33,7 @@ namespace Master
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key is the hash, value is the port of the slave that is responsable for that hash
         SortedList<int, SortedList<int, PadIntStored>> myResponsability = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
-        SortedList<Transaction, bool> transacções_state = new SortedList<Transaction, bool>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
+        List<TransactionWrapper> transacções_state = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
         public Slave()
         {
             channelToOut = new TcpChannel();
@@ -240,7 +240,11 @@ namespace Master
         {
             if (isMine(uid))
             {
-                myResponsability[hashUid(uid)][uid].lockPadInt(lockby);
+                if (!myResponsability[hashUid(uid)][uid].lockPadInt(lockby)) {
+                    String beenLockedBy = myResponsability[hashUid(uid)][uid].getLockby();
+                    String killed = TransactionWrapper.txCompareTo(lockby,beenLockedBy);
+
+                }
                 return true;
             }
             else
@@ -264,7 +268,7 @@ namespace Master
         }
         public bool isMine(int uid)
         {
-            return whereIsPadInt(uid) == MINE;
+            return (whereIsPadInt(uid) == MINE && myResponsability[hashUid(uid)].ContainsKey(uid));
         }
         public bool hashPadInts(int uid)
         {
@@ -317,8 +321,9 @@ namespace Master
 
         //###########################################################
         public bool CommitTransaction(Transaction t){
-            new PADI_DSTM_Lib.TransactionWrapper((ISlaveService)this, t);
-            return false; //FIXME!!
+            TransactionWrapper newTx = new PADI_DSTM_Lib.TransactionWrapper((ISlaveService)this, t);
+            transacções_state.Add(newTx);
+            return newTx.CommitTransaction(); //FIXME!!
         }
 
     }
