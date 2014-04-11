@@ -173,7 +173,7 @@ namespace PADI_DSTM_Lib
         public String getVersion() { return version; }
         public String toString() { return ">ID=" + id + " valor=" + value + " version=" + version + " lockby=" + lockby + "; "; }
     }
-
+    [Serializable]
     public class PadInt
     { //read e write may throw TxException.
 

@@ -173,6 +173,7 @@ namespace Master
         public bool freeze(String url)
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
+            slaves.Remove(getPortFromUrl(url));
             slave.freeze();
             return true;
         }
@@ -180,12 +181,15 @@ namespace Master
         {
             Console.WriteLine("Faz recover " + url);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
+            slaves.Add(getPortFromUrl(url), getPortFromUrl(url));
             slave.recover();
             return true;
         }
         public bool fail(String url)
         {
             Console.WriteLine("Faz fail " + url);
+
+            slaves.Remove(getPortFromUrl(url));
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
             return slave.fail();
         }
@@ -244,6 +248,17 @@ namespace Master
         {
             return uid % MYPRIME;
         }
+
+        private int getPortFromUrl(String url) {
+            char[] delimiterChars = { ':', '/' };
+            string[] words = url.Split(delimiterChars);
+            foreach (string s in words)
+            {
+                System.Console.WriteLine(s);
+            }
+            return Convert.ToInt32(words[4]);
+        }
+
     }
 
 

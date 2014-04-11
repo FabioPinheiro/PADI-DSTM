@@ -68,6 +68,9 @@ namespace Master
         {
             return slave.lockPadInt(uid, lockby);
         }
+        public String accessPadiIntVersion(int uid) {
+            return slave.accessPadiIntVersion(uid);
+        }
         public bool CommitTransaction(Transaction t) {
             return slave.CommitTransaction(t);
         }

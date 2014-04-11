@@ -1,0 +1,12 @@
+﻿Grupo 25
+Fábio Pinheiro 	69485
+Rafael Reia		69643
+Artur Alkaim	70407
+
+Projecto PADI-DSTM
+
+Para iniciar os servidores basta correr Master.exe
+Este irá pedir para se inserir um numero:
+	0 - Inicia como Master
+	1 - Inicia como Slave
+
