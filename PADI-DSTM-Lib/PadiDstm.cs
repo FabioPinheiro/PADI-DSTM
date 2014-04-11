@@ -50,7 +50,7 @@ namespace PADI_DSTM_Lib
                 tx = null;
                 return ret;
             }
-            else return false; //FIXME devia fazer throw !???????????????????????????????????????????????????????????????????????????????????????
+            else { throw new TxException("Não existe nenhuma transação");  return false; }
         }
         public static bool TxAbort() //SOMOS CONTRA O ABORTO!! PRO VIDA!!
         {
@@ -125,7 +125,7 @@ namespace PADI_DSTM_Lib
         bool CommitTransaction(Transaction Trtnsaction);
     }
 
-    [Serializable] //FIXME passar por referencia
+    [Serializable] // passar por referencia; já não nessecario
     public class PadIntStored
     {
         private String version = "none:0";
@@ -158,9 +158,9 @@ namespace PADI_DSTM_Lib
         }
 
         public bool setVaule(int value, String newVersion, String oldVersion)
-        { //FIXME LOCK
+        {
             Console.WriteLine("setVaule!!" + " lockby:" + lockby + " newVersion: " + newVersion + " oldVersion:" + oldVersion + "  this.version:" + this.version);
-            if (oldVersion == this.version &&/*&&*/ lockby == newVersion)
+            if (oldVersion == this.version && lockby == newVersion)
             {
                 Console.WriteLine("setVaule!! newVersion: " + newVersion + " oldVersion:" + oldVersion);
                 version = newVersion;
@@ -203,14 +203,14 @@ namespace PADI_DSTM_Lib
         {
             lockedAux = slave.lockPadInt(padInt.getID(), transactionID);
             return lockedAux;
-        } //FIXME
+        }
         public bool setUnlock(String transactionID, ISlaveService slave)
         {
             lockedAux = !slave.unlockPadInt(padInt.getID(), transactionID);
             if (!lockedAux)
                 return true;
-            else throw new NotImplementedException(); //FIXME!!!!!!!!!!!!!!!!!!
-        } //FIXME
+            else throw new TxException("setUnlock FAIL nuca devia chegarr aqui"); //FIXME!!!!!!!!!!!!!!!!!!
+        }
 
         public bool confirmVersion(ISlaveService slave)
         {
@@ -228,7 +228,7 @@ namespace PADI_DSTM_Lib
                 return slave.setVaule(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
             }
             else
-                return true;//FIXME padInt o PadInt deve ver informado disto ou não? ()alterar a verção
+                return true;//FIXME padInt o PadInt deve ser informado disto ou não? ()alterar a verção
         }
 
     }
@@ -258,7 +258,7 @@ namespace PADI_DSTM_Lib
         /*LIXO
         private bool lockAllPadInt()
         {
-            //bool locking = true; //FIXME
+            //bool locking = true; //FIXM
             foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
             {
                 if (!pair.Value.setLock(this, slave))
@@ -268,7 +268,7 @@ namespace PADI_DSTM_Lib
         }
         private bool unlockAllPadInt()
         {
-            //bool locking = true; //FIXME
+            //bool locking = true; //FIXM
             foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
             {
                 if (!pair.Value.setUnlock(this, slave))
@@ -276,12 +276,12 @@ namespace PADI_DSTM_Lib
             }
             return true; // consegui fazer look a todo
         }
-        public bool TxCommitAUX()//FIXME muitos problemas de consistencia
+        public bool TxCommitAUX()//FIXM muitos problemas de consistencia
         {
             Console.WriteLine("TxCommitAUX()");
             try
             {
-                lockAllPadInt(); //FIXME return ...
+                lockAllPadInt(); //FIXM return ...
                 Console.WriteLine("lockAllPadInt()");
                 foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
                 {
@@ -293,7 +293,7 @@ namespace PADI_DSTM_Lib
                 }
 
             }
-            finally { unlockAllPadInt(); } ///FIXME return ...
+            finally { unlockAllPadInt(); } ///FIXM return ...
             Console.WriteLine("DONE-TxCommitAUX()");
             return true;
         }
@@ -310,6 +310,7 @@ namespace PADI_DSTM_Lib
             return taskArray[0].Result;
             //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
         }*/
+
         private PadIntStored remotingAccessPadIntStored(int uid, bool toCreate)
         {
             if (toCreate)
@@ -329,18 +330,18 @@ namespace PADI_DSTM_Lib
 
             /*if (toCreate)
             {
-                padIntStored = slave.createPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
+                padIntStored = slave.createPadInt(uid); //FIXM se o servidor tiver morto isto devolve null .... ERROR
                 if (padIntStored != null)
                     return padIntStored;
                 else {
-                    padIntStored = slave.accessPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
+                    padIntStored = slave.accessPadInt(uid); //FIXM se o servidor tiver morto isto devolve null .... ERROR
                     if (padIntStored.getVersion() == "none:0")
                         return padIntStored;
                     else return null;
                 }
             }
             else {
-                padInt = slave.accessPadInt(uid); //FIXME se o servidor tiver morto isto devolve null .... ERROR
+                padInt = slave.accessPadInt(uid); //FIXM se o servidor tiver morto isto devolve null .... ERROR
                 if (padInt.getVersion() != "none:0")
                     return padInt;
                 else return null;
@@ -408,7 +409,6 @@ namespace PADI_DSTM_Lib
 
         private bool lockAllPadInt()
         {
-            //bool locking = true; //FIXME
             foreach (KeyValuePair<int, PadInt> pair in transaction.getPoolPadInt())
             {
                 if (!pair.Value.setLock(getTransactionWrapperID(), slave))
@@ -420,7 +420,6 @@ namespace PADI_DSTM_Lib
         }
         private bool unlockAllPadIntLocked()
         {
-            //bool locking = true; //FIXME
             foreach (KeyValuePair<int, PadInt> pair in transaction.getPoolPadInt())
             {
                 if (pair.Value.islockedAux() /*evita fazer unlock as variavei que não estão lock*/ && !pair.Value.setUnlock(getTransactionWrapperID(), slave))
@@ -438,7 +437,7 @@ namespace PADI_DSTM_Lib
             return true;
         }
 
-        public bool TxCommitAUX()//FIXME muitos problemas de consistencia
+        private bool TxCommitAUX()//FIXME muitos problemas de consistencia
         {
             Console.WriteLine("TxCommitAUX()");
             if (!reasonsForSuicide()) //tem motivos para isso !!
@@ -469,7 +468,7 @@ namespace PADI_DSTM_Lib
 
 
                 }
-                finally { unlockAllPadIntLocked(); } ///FIXME return ...
+                finally { unlockAllPadIntLocked(); } ///FIXME return ... talvez não seja um problema REVER
             }
             Console.WriteLine("DONE-TxCommitAUX()");
             return true;
