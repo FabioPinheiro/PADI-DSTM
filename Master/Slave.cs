@@ -317,7 +317,7 @@ namespace Master
 
         //###########################################################
         public bool CommitTransaction(Transaction t){
-            new TransactionWrapper(this, t);
+            new PADI_DSTM_Lib.TransactionWrapper((ISlaveService)this, t);
             return false; //FIXME!!
         }
 
