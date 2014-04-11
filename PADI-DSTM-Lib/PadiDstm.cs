@@ -353,9 +353,22 @@ namespace PADI_DSTM_Lib
                 else return null; //!!Confirmado (Fabio: segundo o rafael)
             }
         }
+        private static string timeFromId(String ts)
+        {
+           String[] words = ts.Split(':');
 
+           return words[1] + words[2] + words[3];
+       }
         public static String txCompareTo(String transactionID1, String transactionID2)
         {
+           String str1 = timeFromId(transactionID1);
+           String str2 = timeFromId(transactionID2);
+           int comp = DateTime.Compare(DateTime.Parse(str1), DateTime.Parse(str2));
+           if (comp <= 0)
+               return str1;
+           else
+               return str2;
+            /*
             if (transactionID1.CompareTo(transactionID2) > 0)
             {
                 return transactionID2;
@@ -364,7 +377,7 @@ namespace PADI_DSTM_Lib
             {
                 return transactionID1;
             }
-            else throw new TxException("txCompareTo equal");
+            else throw new TxException("txCompareTo equal");*/
         }
         public bool TxAbort(String transactionID)
         {
@@ -383,7 +396,7 @@ namespace PADI_DSTM_Lib
                         return false;
                         break;
                     }
-                default: throw new TxException("TxAbort in default (não devia xegar aqui!?!)")
+                default: throw new TxException("TxAbort in default (não devia xegar aqui!?!)");
             }
 
         }
