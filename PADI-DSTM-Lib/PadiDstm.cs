@@ -189,6 +189,9 @@ namespace PADI_DSTM_Lib
         private bool readedAux = false;/*for client*/
         private bool writedAux = false;/*for client*/
         private int valueAux;/*for client*/
+        private bool lockedAux = false;/*for salve*/
+
+        public bool islockedAux() { return locked; }
 
         public PadInt(PadIntStored padInt)
         {
@@ -204,16 +207,19 @@ namespace PADI_DSTM_Lib
 
         public bool setLock(String transactionID, ISlaveService slave)
         {
-            return slave.lockPadInt(padInt.getID(), transactionID);
+            lockedAux = slave.lockPadInt(padInt.getID(), transactionID);
+            return lockedAux;
         } //FIXME
         public bool setUnlock(String transactionID, ISlaveService slave)
         {
-            if (slave.unlockPadInt(padInt.getID(), transactionID))
+            lockedAux = !slave.unlockPadInt(padInt.getID(), transactionID);
+            if (!lockedAux)
                 return true;
             else throw new NotImplementedException(); //FIXME!!!!!!!!!!!!!!!!!!
         } //FIXME
 
-        public bool confirmVersion(ISlaveService slave) {
+        public bool confirmVersion(ISlaveService slave)
+        {
             if (accessVersion == slave.accessPadIntVersion(padInt.getID))
                 return true;
             else return false;
@@ -243,9 +249,8 @@ namespace PADI_DSTM_Lib
     [Serializable]
     public class Transaction
     {
-   
+
         private SortedList<int, PadInt> poolPadInt = new SortedList<int, PadInt>();
-        private int status = 0; //(1-commiting)
 
 
         public SortedList<int, PadInt> getPoolPadInt() { return poolPadInt; }
@@ -327,40 +332,47 @@ namespace PADI_DSTM_Lib
 
     public class TransactionWrapper
     {
+        enum State { possibleToAbort, impossibleToAbort, Abort };
         private String timeStramp;
         private ISlaveService slave;
+        private State state;
         public String getTransactionWrapperID() { return "IDDDDDDDDDDDDDDDDDDDDDDDDDDDD"; } //FIXME EEEEEEEE
-        public TransactionWrapper(ISlaveService slave)
+        private Transaction transaction;
+        public TransactionWrapper(ISlaveService slave, Transaction transaction)
         {
             this.slave = slave;
+            this.transaction = transaction;
             timeStramp = DateTime.Now.ToString("s");
+            state = State.possibleToAbort;
         }
 
         //###########################################################
 
-        private bool lockAllPadInt(Transaction t)
+        private bool lockAllPadInt()
         {
             //bool locking = true; //FIXME
-            foreach (KeyValuePair<int, PadInt> pair in t.getPoolPadInt())
+            foreach (KeyValuePair<int, PadInt> pair in transaction.getPoolPadInt())
             {
                 if (!pair.Value.setLock(getTransactionWrapperID(), slave))
                     return false;
-            }
-            return true; // consegui fazer look a todo
-        }
-        private bool unlockAllPadInt(Transaction t)
-        {
-            //bool locking = true; //FIXME
-            foreach (KeyValuePair<int, PadInt> pair in t.getPoolPadInt())
-            {
-                if (!pair.Value.setUnlock(getTransactionWrapperID(), slave))
+                if (state == State.Abort)
                     return false;
             }
             return true; // consegui fazer look a todo
         }
-        private bool reasonsForSuicide(Transaction t)
+        private bool unlockAllPadIntLocked()
         {
-            foreach (KeyValuePair<int, PadInt> pair in t.getPoolPadInt())
+            //bool locking = true; //FIXME
+            foreach (KeyValuePair<int, PadInt> pair in transaction.getPoolPadInt())
+            {
+                if(pair.Value.islockedAux() /*evita fazer unlock as variavei que não estão lock*/ && !pair.Value.setUnlock(getTransactionWrapperID(), slave))
+                    return false;
+            }
+            return true; // consegui fazer look a todo
+        }
+        private bool reasonsForSuicide()
+        {
+            foreach (KeyValuePair<int, PadInt> pair in transaction.getPoolPadInt())
             {
                 if (!pair.Value.confirmVersion(slave))
                     return false;
@@ -368,39 +380,46 @@ namespace PADI_DSTM_Lib
             return true;
         }
 
-        public bool TxCommitAUX(Transaction t)//FIXME muitos problemas de consistencia
+        public bool TxCommitAUX()//FIXME muitos problemas de consistencia
         {
             Console.WriteLine("TxCommitAUX()");
-            if (!reasonsForSuicide(t)) //tem motivos para isso !!
+            if (!reasonsForSuicide()) //tem motivos para isso !!
             {
+                Console.WriteLine("TxCommitAUX -> reasonsForSuicide!!");
+                return false;
+            }else{
                 try
                 {
-
-                    lockAllPadInt(t); //FIXME return ...
-                    Console.WriteLine("lockAllPadInt()");
-                    foreach (KeyValuePair<int, PadInt> pair in t.getPoolPadInt())
+                    if (!lockAllPadInt())
+                        return false;
+                    if (state == State.Abort) //FIXME não é atomico parte1; é facil de resolver mas tb é preciso de ter azar!!
+                        return false;
+                    else
                     {
-                        if (!pair.Value.commitVaule(getTransactionWrapperID(), slave))
+                        state = State.impossibleToAbort; //FIXME não é atomico parte2; é facil de resolver mas tb é preciso de ter azar!!
+                        foreach (KeyValuePair<int, PadInt> pair in this.transaction.getPoolPadInt())
                         {
-                            Console.WriteLine("throw new TxException();");
-                            throw new TxException("TxCommitAUX->commitVaule Fail");
+                            if (!pair.Value.commitVaule(getTransactionWrapperID(), slave))
+                            {
+                                Console.WriteLine("########################### throw new TxException();");
+                                throw new TxException("TxCommitAUX->commitVaule Fail (possivel inconcistencia)");
+                            }
                         }
                     }
 
 
                 }
-                finally { unlockAllPadInt(t); } ///FIXME return ...
+                finally { unlockAllPadIntLocked(); } ///FIXME return ...
             }
-            else Console.WriteLine("TxCommitAUX -> reasonsForSuicide!!");
             Console.WriteLine("DONE-TxCommitAUX()");
             return true;
         }
 
-        public bool CommitTransaction(Transaction t)
+        public bool CommitTransaction()
         {
             //Task taskA = new Task(() => TxCommitAUX());
             //ThreadStart ts = new ThreadStart(this.TxCommitAUX()); 
-            Task<bool>[] taskArray = { Task<bool>.Factory.StartNew(() => this.TxCommitAUX(t)) };
+            Task<bool>[] taskArray = { Task<bool>.Factory.StartNew(() => this.TxCommitAUX()) };
 
             Console.WriteLine("WAITNG !!!!");
             taskArray[0].Wait();
@@ -436,25 +455,14 @@ namespace PADI_DSTM_Lib
             }
             else throw new TxException("txCompareTo equal");*/
         }
-        public bool AbortTransaction(String transactionID)
+        public bool AbortTransaction()
         {
-            String[] words = transactionID.Split(':');
-            words[0];
-            switch (status)
+            if (state == State.possibleToAbort)
             {
-                case 0:
-                    {
-                        //FIXME!
-                        return false;
-                        break;
-                    }
-                case 1:
-                    {
-                        return false;
-                        break;
-                    }
-                default: throw new TxException("TxAbort in default (não devia xegar aqui!?!)");
+                state = State.Abort;
+                return true;
             }
+            else return false;
 
         }
 
