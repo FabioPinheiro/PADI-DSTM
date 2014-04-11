@@ -33,7 +33,7 @@ namespace Master
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key is the hash, value is the port of the slave that is responsable for that hash
         SortedList<int, SortedList<int, PadIntStored>> myResponsability = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
-
+        SortedList<Transaction, bool> transacções_state = new SortedList<Transaction, bool>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
         public Slave()
         {
             channelToOut = new TcpChannel();
@@ -41,6 +41,7 @@ namespace Master
             propBag = new Hashtable();
             propBag["name"] = ""; // "Each channel must have a unique name. Set this property to an empty string ("" or String.Empty) 
             //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
+            
             cs = new SlaveServices(this);
         }
         public void registSlave()
@@ -254,7 +255,13 @@ namespace Master
                 }
             }
         }
-
+        public String accessPadiIntVersion(int uid) {
+            PadIntStored  padint = accessPadInt(uid);
+            if (padint != null) {
+                padint.getVersion();
+            }
+            return "ERROR:ERROR";
+        }
         public bool isMine(int uid)
         {
             return whereIsPadInt(uid) == MINE;
@@ -306,5 +313,10 @@ namespace Master
         {
             return uid % MYPRIME;
         }
+
+
+        //###########################################################
+
+
     }
 }
