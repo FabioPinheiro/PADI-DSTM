@@ -51,7 +51,10 @@ namespace Master
         {
             return slave.status();
         }
-
+        public bool fail()
+        {
+            return slave.fail();
+        }
         public bool setVaule(int uid, int value, String newVersion, String oldVersion)
         {
             Console.WriteLine("SET VALUE!! " + value + "  version  " + newVersion);
@@ -122,6 +125,9 @@ namespace Master
         public bool recover(String url)
         {
             return master.recover(url);
+        }
+        public bool fail(String url) {
+            return master.fail(url);
         }
         public bool status()
         {

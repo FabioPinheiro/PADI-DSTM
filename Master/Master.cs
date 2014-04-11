@@ -177,7 +177,11 @@ namespace Master
             slave.recover();
             return true;
         }
-
+        public bool fail(String url) {
+            Console.WriteLine("Faz fail " + url);
+            ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
+            return slave.fail();
+        }
         public bool status()
         {
             try

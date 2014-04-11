@@ -112,7 +112,11 @@ namespace Master
                 System.Threading.Thread.Sleep(2000);
             }
         }
-
+        public bool fail()
+        {
+            currentStatus = DETH;
+            return true;
+        }
         public int getSlave()
         {
             return master.getSlave();//FIXME
@@ -127,7 +131,7 @@ namespace Master
         public PadIntStored createPadInt(int uid)
         {
             if (currentStatus == DETH)
-                Environment.Exit(DETH);
+                return null;
             frozenHandler();
             // System.Console.WriteLine("Vamos escrever");
             PadIntStored aux = null;
@@ -170,7 +174,8 @@ namespace Master
         public PadIntStored accessPadInt(int uid)
         {
             if (currentStatus == DETH)
-                Environment.Exit(DETH);
+                //Environment.Exit(DETH);
+                return null;
             frozenHandler();
             PadIntStored aux = null;
             int location = whereIsPadInt(uid);
@@ -226,7 +231,7 @@ namespace Master
                 else
                 {
                     ISlaveService slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-                    return slaveAUX.unlockPadInt(uid,lockby);
+                    return slaveAUX.unlockPadInt(uid, lockby);
                 }
             }
         }
@@ -245,7 +250,7 @@ namespace Master
                 else
                 {
                     ISlaveService slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-                    return slaveAUX.lockPadInt(uid,lockby);
+                    return slaveAUX.lockPadInt(uid, lockby);
                 }
             }
         }
