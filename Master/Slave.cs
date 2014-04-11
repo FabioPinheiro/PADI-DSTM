@@ -316,7 +316,10 @@ namespace Master
 
 
         //###########################################################
-
+        public bool CommitTransaction(Transaction t){
+            new TransactionWrapper(this, t);
+            return false; //FIXME!!
+        }
 
     }
 }

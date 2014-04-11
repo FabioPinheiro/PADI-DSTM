@@ -177,7 +177,7 @@ namespace PADI_DSTM_Lib
         private int valueAux;/*for client*/
         private bool lockedAux = false;/*for salve*/
 
-        public bool islockedAux() { return locked; }
+        public bool islockedAux() { return lockedAUX; }
 
         public PadInt(PadIntStored padInt)
         {
