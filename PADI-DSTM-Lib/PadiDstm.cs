@@ -92,6 +92,13 @@ namespace PADI_DSTM_Lib
         {
             return tx.AccessPadInt(uid);
         }
+
+        public static PadIntStored remotingAccessPadIntStored(int uid, bool toCreate)
+        {
+            if (toCreate)
+                return slave.createPadInt(uid);
+            else return slave.accessPadInt(uid);
+        }
     }
 
 
@@ -195,23 +202,30 @@ namespace PADI_DSTM_Lib
         public void Write(int value)/*for client*/ { writedAux = true; this.valueAux = value; }
         public String toString() { return ">PadIntStored:" + padInt.toString() + " >PadInt: valueAux=" + valueAux + " readedAux=" + readedAux + " writedAux=" + writedAux + ";"; }
 
-        public bool setLock(Transaction transaction, ISlaveService slave)
+        public bool setLock(String transactionID, ISlaveService slave)
         {
-            return slave.lockPadInt(padInt.getID(), transaction.getTransactionID());
+            return slave.lockPadInt(padInt.getID(), transactionID);
         } //FIXME
-        public bool setUnlock(Transaction transaction, ISlaveService slave)
+        public bool setUnlock(String transactionID, ISlaveService slave)
         {
-            if (slave.unlockPadInt(padInt.getID(), transaction.getTransactionID()))
+            if (slave.unlockPadInt(padInt.getID(), transactionID))
                 return true;
             else throw new NotImplementedException(); //FIXME!!!!!!!!!!!!!!!!!!
         } //FIXME
-        public bool commitVaule(Transaction t, ISlaveService slave)
+
+        public bool confirmVersion(ISlaveService slave) {
+            if (accessVersion == slave.accessPadIntVersion(padInt.getID))
+                return true;
+            else return false;
+        }
+
+        public bool commitVaule(String transactionID, ISlaveService slave)
         {
             Console.WriteLine(this.toString());
 
             if (readedAux || writedAux)
             {
-                return slave.setVaule(padInt.getID(), this.valueAux, t.getTransactionID(), this.accessVersion);
+                return slave.setVaule(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
             }
             else
                 return true;//FIXME padInt o PadInt deve ver informado disto ou não? ()alterar a verção
@@ -229,33 +243,23 @@ namespace PADI_DSTM_Lib
     [Serializable]
     public class Transaction
     {
-        private String transactionID = null;
-        private ISlaveService slave;
+   
         private SortedList<int, PadInt> poolPadInt = new SortedList<int, PadInt>();
         private int status = 0; //(1-commiting)
 
-        public String getTransactionID() { return this.transactionID; }
+
         public SortedList<int, PadInt> getPoolPadInt() { return poolPadInt; }
 
-        public Transaction(int idServer, String timeStramp, ISlaveService slave)
-        {
-            transactionID = Convert.ToString(idServer) + ":" + timeStramp;
-            this.slave = slave;
-        }
+        public Transaction() { }
 
-        private PadIntStored remotingAccessPadIntStored(int uid, bool toCreate)
-        {
-            if (toCreate)
-                return slave.createPadInt(uid);
-            else return slave.accessPadInt(uid);
-        }
+
         public PadInt remotingAccessPadInt(int uid, bool toCreate)
         {
             //se toCreate == true
             //devolve null se já existir OU SE A VERSÂO != "none:0"; caso contrario devolve o PadInt
             //se toCreate == false
             //delvolve o PadInt se existir E se a versão  for diferente de "none:0"
-            PadIntStored padIntStored = remotingAccessPadIntStored(uid, toCreate);
+            PadIntStored padIntStored = PadiDstm.remotingAccessPadIntStored(uid, toCreate); //HACK !!
             if (padIntStored != null)
                 return new PadInt(padIntStored);
             else return null;
@@ -318,6 +322,141 @@ namespace PADI_DSTM_Lib
 
 
 
+
+    }
+
+    public class TransactionWrapper
+    {
+        private String timeStramp;
+        private ISlaveService slave;
+        public String getTransactionWrapperID() { return "IDDDDDDDDDDDDDDDDDDDDDDDDDDDD"; } //FIXME EEEEEEEE
+        public TransactionWrapper(ISlaveService slave)
+        {
+            this.slave = slave;
+            timeStramp = DateTime.Now.ToString("s");
+        }
+
+        //###########################################################
+
+        private bool lockAllPadInt(Transaction t)
+        {
+            //bool locking = true; //FIXME
+            foreach (KeyValuePair<int, PadInt> pair in t.getPoolPadInt())
+            {
+                if (!pair.Value.setLock(getTransactionWrapperID(), slave))
+                    return false;
+            }
+            return true; // consegui fazer look a todo
+        }
+        private bool unlockAllPadInt(Transaction t)
+        {
+            //bool locking = true; //FIXME
+            foreach (KeyValuePair<int, PadInt> pair in t.getPoolPadInt())
+            {
+                if (!pair.Value.setUnlock(getTransactionWrapperID(), slave))
+                    return false;
+            }
+            return true; // consegui fazer look a todo
+        }
+        private bool reasonsForSuicide(Transaction t)
+        {
+            foreach (KeyValuePair<int, PadInt> pair in t.getPoolPadInt())
+            {
+                if (!pair.Value.confirmVersion(slave))
+                    return false;
+            }
+            return true;
+        }
+
+        public bool TxCommitAUX(Transaction t)//FIXME muitos problemas de consistencia
+        {
+            Console.WriteLine("TxCommitAUX()");
+            if (!reasonsForSuicide(t)) //tem motivos para isso !!
+            {
+                try
+                {
+
+                    lockAllPadInt(t); //FIXME return ...
+                    Console.WriteLine("lockAllPadInt()");
+                    foreach (KeyValuePair<int, PadInt> pair in t.getPoolPadInt())
+                    {
+                        if (!pair.Value.commitVaule(getTransactionWrapperID(), slave))
+                        {
+                            Console.WriteLine("throw new TxException();");
+                            throw new TxException("TxCommitAUX->commitVaule Fail");
+                        }
+                    }
+
+
+                }
+                finally { unlockAllPadInt(t); } ///FIXME return ...
+            }
+            else Console.WriteLine("TxCommitAUX -> reasonsForSuicide!!");
+            Console.WriteLine("DONE-TxCommitAUX()");
+            return true;
+        }
+
+        public bool CommitTransaction(Transaction t)
+        {
+            //Task taskA = new Task(() => TxCommitAUX());
+            //ThreadStart ts = new ThreadStart(this.TxCommitAUX()); 
+            Task<bool>[] taskArray = { Task<bool>.Factory.StartNew(() => this.TxCommitAUX(t)) };
+
+            Console.WriteLine("WAITNG !!!!");
+            taskArray[0].Wait();
+            //taskA.Wait();
+            return taskArray[0].Result;
+            //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
+        }
+
+
+        private static string timeFromId(String ts)
+        {
+            String[] words = ts.Split(':');
+
+            return words[1] + words[2] + words[3];
+        }
+        public static String txCompareTo(String transactionID1, String transactionID2)
+        {
+            String str1 = timeFromId(transactionID1);
+            String str2 = timeFromId(transactionID2);
+            int comp = DateTime.Compare(DateTime.Parse(str1), DateTime.Parse(str2));
+            if (comp <= 0)
+                return str1;
+            else
+                return str2;
+            /*
+            if (transactionID1.CompareTo(transactionID2) > 0)
+            {
+                return transactionID2;
+            }
+            else if (transactionID1.CompareTo(transactionID2) < 0)
+            {
+                return transactionID1;
+            }
+            else throw new TxException("txCompareTo equal");*/
+        }
+        public bool AbortTransaction(String transactionID)
+        {
+            String[] words = transactionID.Split(':');
+            words[0];
+            switch (status)
+            {
+                case 0:
+                    {
+                        //FIXME!
+                        return false;
+                        break;
+                    }
+                case 1:
+                    {
+                        return false;
+                        break;
+                    }
+                default: throw new TxException("TxAbort in default (não devia xegar aqui!?!)");
+            }
+
+        }
 
     }
 
