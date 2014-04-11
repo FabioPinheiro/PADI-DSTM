@@ -109,7 +109,7 @@ namespace Master
         {
             while (currentStatus == FROZEN)
             {
-                System.Threading.Thread.Sleep(2000);
+                System.Threading.Thread.Sleep(3000);
             }
         }
         public bool fail()
@@ -189,7 +189,7 @@ namespace Master
             }
             else
             {
-                accessExternalPadInt(uid, location);
+                return accessExternalPadInt(uid, location);
             }
             return aux.getVersion() == "none:0" ? null : aux;
         }

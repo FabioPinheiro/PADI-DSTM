@@ -44,14 +44,20 @@ namespace Master
         }
         public int registSlave()
         {
-            numberOfSlaves++;
-            slaves.Add(port, port); //TODO correct this
-            return port++;
+            lock (slaves)
+            {
+                numberOfSlaves++;
+                slaves.Add(port, port); //TODO correct this
+                return port++;
+            }
         }
         public int getSlave()
         {
-            System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin % numberOfSlaves);
-            return slaves[8087 + (roundRobin++ % numberOfSlaves)];
+            lock (slaves)
+            {
+                System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin % numberOfSlaves);
+                return slaves[8087 + (roundRobin++ % numberOfSlaves)];
+            }
         }
         public MasterServices getMasterServices()
         {
@@ -65,8 +71,8 @@ namespace Master
             System.Console.WriteLine("begin location " + location + "  " + uid);
             if (location == -1)
             { //Not assigned, get them!!
-                System.Console.WriteLine("O Master cria: " + uid + " E fica com a parte " + uid % 101 + " da hash table");
-                location = uid % 101;
+                System.Console.WriteLine("O Master cria: " + uid + " E fica com a parte " + hashUid(uid) + " da hash table");
+                location = hashUid(uid);
                 padIntsLocation[location] = port;
                 myResponsability.Add(location, new SortedList<int, PadIntStored>());
                 System.Console.WriteLine("location " + location + "key in new pie " + myResponsability.ContainsKey(location));
@@ -79,7 +85,7 @@ namespace Master
                 if (hashPadInts(uid))
                 {
                     //create here;
-                    System.Console.WriteLine("O Master cria: " + uid + " E fica com a parte " + uid % 101 + " da hash table");
+                    System.Console.WriteLine("O Master cria: " + uid + " E fica com a parte " + hashUid(uid) + " da hash table");
                     aux = new PadIntStored(uid);
                     myResponsability[location].Add(uid, aux);
                     return aux;
@@ -101,24 +107,24 @@ namespace Master
 
         public bool hashPadInts(int uid)
         {
-            if (myResponsability.ContainsKey(uid % 101))
+            if (myResponsability.ContainsKey(hashUid(uid)))
                 return true;
             return false;
         }
         public int whereIsPadInt(int uid)
         {
             int aux;
-            int location = uid % 101;
+            int location = hashUid(uid);
             System.Console.WriteLine("location in Where is Pad Int " + location);
             System.Console.WriteLine("key " + myResponsability.ContainsKey(location));
 
             if (myResponsability.ContainsKey(location))
-                return location;
+                return MINE;
             if (padIntsLocation.TryGetValue(location, out aux))
             { //need to connect to new server!
                 return aux;
             }
-            return -1; // means that that type of uid%PrimeNumber does not exist at this moment! 
+            return NONE; // means that that type of uid%PrimeNumber does not exist at this moment! 
         }
         private PadIntStored createExternalPadInt(int uid, int location)
         {
@@ -172,12 +178,13 @@ namespace Master
         }
         public bool recover(String url)
         {
-            Console.WriteLine("Faz recover "+url);
+            Console.WriteLine("Faz recover " + url);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
             slave.recover();
             return true;
         }
-        public bool fail(String url) {
+        public bool fail(String url)
+        {
             Console.WriteLine("Faz fail " + url);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
             return slave.fail();
@@ -186,7 +193,7 @@ namespace Master
         {
             try
             {
-                
+
                 printStatus();
                 //envia a info para todos: Melhorar se houver tempo
                 foreach (KeyValuePair<int, int> kvp in slaves)
@@ -196,14 +203,17 @@ namespace Master
                 }
                 return true;
             }
-            catch (RemotingException e) {
+            catch (RemotingException e)
+            {
                 System.Console.WriteLine(e.Message);
                 return false;
             }
         }
 
-        private String getStatus() {
-            switch (currentStatus) { 
+        private String getStatus()
+        {
+            switch (currentStatus)
+            {
                 case LIVE:
                     return "LIVE";
                 case FROZEN:
@@ -212,9 +222,10 @@ namespace Master
                     return "DETH";
                 default:
                     return "DETH";
-            }            
+            }
         }
-        private void printStatus(){
+        private void printStatus()
+        {
             System.Console.WriteLine("Master current status: " + getStatus());
             System.Console.WriteLine(slaves.Count() + " Registed slaves: ");
             foreach (KeyValuePair<int, int> kvp in slaves)
@@ -222,14 +233,17 @@ namespace Master
                 Console.WriteLine(" - " + kvp.Key + " - Responsible for:");
                 foreach (KeyValuePair<int, int> locationPair in padIntsLocation)
                 {
-                    if(locationPair.Value == kvp.Key)
+                    if (locationPair.Value == kvp.Key)
                         Console.Write("      " + locationPair.Key + " - ");
                 }
                 Console.WriteLine();
             }
-            
-        }
 
+        }
+        private int hashUid(int uid)
+        {
+            return uid % MYPRIME;
+        }
     }
 
 
