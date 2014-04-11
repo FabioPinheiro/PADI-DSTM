@@ -395,10 +395,13 @@ namespace PADI_DSTM_Lib
         private String timeStramp;
         private ISlaveService slave;
         private State state;
-        public String getTransactionWrapperID() { return "IDDDDDDDDDDDDDDDDDDDDDDDDDDDD"; } //FIXME EEEEEEEE
+        public String getTransactionWrapperID() { return Convert.ToString(port) + ":" + timeStramp; } //FIXME EEEEEEEE
         private Transaction transaction;
-        public TransactionWrapper(ISlaveService slave, Transaction transaction)
+        private int port;
+
+        public TransactionWrapper(ISlaveService slave, Transaction transaction, int port) //FIXME remove port
         {
+            this.port = port; //FIXME é para remover!!!
             this.slave = slave;
             this.transaction = transaction;
             timeStramp = DateTime.Now.ToString("s");
