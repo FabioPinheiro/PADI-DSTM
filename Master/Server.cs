@@ -28,25 +28,20 @@ namespace Master
                 Master master = new Master();
                 MasterServices ms = master.getMasterServices();
                 RemotingServices.Marshal(ms, "MyRemoteObjectName", typeof(MasterServices));
-                System.Console.WriteLine("Estou vivo");
                 System.Console.ReadLine();
 
             }
             if (args1 == "1")
             {
-                System.Console.WriteLine("#BEGIN SLAVE# YELLOW");
+                System.Console.WriteLine("#BEGIN SLAVE");
                 Slave slave = new Slave();
                 slave.registSlave();
-
-                System.Console.WriteLine("#SLAVE# Wainting press enter to leave");
-
                 System.Console.Read();
-                System.Console.WriteLine("#END SLAVE# PEACE OUT");
             }
 
 
 
-            System.Console.WriteLine("EEEEEEEEEEEEEEEEEEEEEEEEENNNNNNNNNNNNNNNNNNNNNNDDDDDDDDDDDDDDDDDDDDDDddd");
+            System.Console.WriteLine("THE END");
 
 
         }
