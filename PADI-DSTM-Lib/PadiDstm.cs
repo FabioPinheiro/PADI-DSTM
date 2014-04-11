@@ -36,7 +36,7 @@ namespace PADI_DSTM_Lib
         { //Liga-se ao slave e começa uma transacçºao. falta começar uma transacção.
             TcpChannel channel = new TcpChannel();
             slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + port + "/MyRemoteObjectName");
-            tx = new Transaction(port, DateTime.Now.ToString("s"), slave);
+            tx = new Transaction();
             if (slave == null)
                 return false;
             else return true;
@@ -84,12 +84,12 @@ namespace PADI_DSTM_Lib
             //master.createPadInt(uid); //change to slave and number of args
             // PadIntStored pds = slave.createPadInt(uid);
             // return pds == null ? null : new PadInt(pds);
-            return tx.CreatePadInt(uid);
+            return tx.CreatePadInt(uid, slave);
         }
 
         public static PadInt AccessPadInt(int uid)
         {
-            return tx.AccessPadInt(uid);
+            return tx.AccessPadInt(uid, slave);
         }
     }
 
@@ -242,18 +242,10 @@ namespace PADI_DSTM_Lib
 
     public class Transaction
     {
-        private String transactionID = null;
-        private ISlaveService slave;
         private SortedList<int, PadInt> poolPadInt = new SortedList<int, PadInt>();
-
-        public String getTransactionID() { return this.transactionID; }
         public SortedList<int, PadInt> getPoolPadInt() { return poolPadInt; }
 
-        public Transaction(int idServer, String timeStramp, ISlaveService slave)
-        {
-            transactionID = Convert.ToString(idServer) + ":" + timeStramp;
-            this.slave = slave;
-        }
+        public Transaction() {}
 
         /*LIXO
         private bool lockAllPadInt()
@@ -311,19 +303,19 @@ namespace PADI_DSTM_Lib
             //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
         }*/
 
-        private PadIntStored remotingAccessPadIntStored(int uid, bool toCreate)
+        private PadIntStored remotingAccessPadIntStored(int uid, bool toCreate, ISlaveService slave)
         {
             if (toCreate)
                 return slave.createPadInt(uid);
             else return slave.accessPadInt(uid);
         }
-        public PadInt remotingAccessPadInt(int uid, bool toCreate)
+        public PadInt remotingAccessPadInt(int uid, bool toCreate, ISlaveService slave)
         {
             //se toCreate == true
             //devolve null se já existir OU SE A VERSÂO != "none:0"; caso contrario devolve o PadInt
             //se toCreate == false
             //delvolve o PadInt se existir E se a versão  for diferente de "none:0"
-            PadIntStored padIntStored = remotingAccessPadIntStored(uid, toCreate);
+            PadIntStored padIntStored = remotingAccessPadIntStored(uid, toCreate, slave);
             if (padIntStored != null)
                 return new PadInt(padIntStored);
             else return null;
@@ -349,9 +341,9 @@ namespace PADI_DSTM_Lib
         }
 
 
-        public PadInt CreatePadInt(int uid)
+        public PadInt CreatePadInt(int uid, ISlaveService slave)
         {
-            PadInt aux = remotingAccessPadInt(uid, true);
+            PadInt aux = remotingAccessPadInt(uid, true, slave);
             if (aux != null)
             {
                 poolPadInt.Add(uid, aux);
@@ -360,13 +352,13 @@ namespace PADI_DSTM_Lib
             else return null; //!!Confirmado (Fabio: segundo o rafael)
         }
 
-        public PadInt AccessPadInt(int uid)
+        public PadInt AccessPadInt(int uid, ISlaveService slave)
         {
             if (poolPadInt.ContainsKey(uid))
                 return poolPadInt[uid];
             else
             {
-                PadInt aux = remotingAccessPadInt(uid, false);
+                PadInt aux = remotingAccessPadInt(uid, false, slave);
                 if (aux != null)
                 {
                     poolPadInt.Add(uid, aux);
