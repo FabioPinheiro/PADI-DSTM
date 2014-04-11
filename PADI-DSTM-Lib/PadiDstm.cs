@@ -133,6 +133,7 @@ namespace PADI_DSTM_Lib
         private int value;
         private String lockby = "none";
 
+        public String getLockby() { return lockby; }
         public PadIntStored(int uid)
         {
             id = uid;
