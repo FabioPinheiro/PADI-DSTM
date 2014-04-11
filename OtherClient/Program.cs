@@ -24,11 +24,11 @@ namespace OtherClient
             //res = PadiDstm.Recover("tcp://localhost:8087/MyRemoteObjectName");
             Console.WriteLine("After recover");
             res = PadiDstm.TxBegin();
-            PadInt pi_a = PadiDstm.CreatePadInt(0);
-            PadInt pi_b = PadiDstm.CreatePadInt(1);
+            PadInt pi_a = PadiDstm.CreatePadInt(3);
+            PadInt pi_b = PadiDstm.CreatePadInt(4);
             res = PadiDstm.TxCommit();
 
-           
+            PadiDstm.Status();
 
             res = PadiDstm.TxBegin();
             pi_a = PadiDstm.AccessPadInt(0);
