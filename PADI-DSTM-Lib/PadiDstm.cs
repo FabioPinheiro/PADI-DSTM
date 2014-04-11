@@ -39,11 +39,7 @@ namespace PADI_DSTM_Lib
             tx = new Transaction(port, DateTime.Now.ToString("s"), slave);
             if (slave == null)
                 return false;
-            else
-            {
-                return true;
-
-            }
+            else return true;
         }
 
         public static bool TxCommit()
@@ -66,7 +62,7 @@ namespace PADI_DSTM_Lib
         }
         public static bool Fail(string URL)
         {
-            return true;
+            return master.fail(URL);
         }
         public static bool Freeze(string URL)
         {
@@ -103,6 +99,7 @@ namespace PADI_DSTM_Lib
         bool setMine(int port, int hash);
         bool freeze(String url);
         bool recover(String url);
+        bool fail(String url);
         bool status();
 
     }
@@ -114,6 +111,7 @@ namespace PADI_DSTM_Lib
         bool setResponsability(int port, int hash);
         bool freeze();
         bool recover();
+        bool fail();
         bool status();
         bool setVaule(int uid, int value, String newVersion, String oldVersion);
         bool unlockPadInt(int uid, String lockby);
@@ -153,7 +151,7 @@ namespace PADI_DSTM_Lib
 
         public bool setVaule(int value, String newVersion, String oldVersion)
         { //FIXME LOCK
-            Console.WriteLine("setVaule!!"+ " lockby:" + lockby + " newVersion: " + newVersion + " oldVersion:" + oldVersion + "  this.version:" + this.version );
+            Console.WriteLine("setVaule!!" + " lockby:" + lockby + " newVersion: " + newVersion + " oldVersion:" + oldVersion + "  this.version:" + this.version);
             if (oldVersion == this.version &&/*&&*/ lockby == newVersion)
             {
                 Console.WriteLine("setVaule!! newVersion: " + newVersion + " oldVersion:" + oldVersion);
@@ -217,7 +215,7 @@ namespace PADI_DSTM_Lib
     public class TxException : System.Exception
     {
         private String error;
-        TxException(String errorInf) {this.error = errorInf;}
+        public TxException(String errorInf) { this.error = errorInf; }
         public String toString() { return error; }
     }
 
@@ -226,7 +224,7 @@ namespace PADI_DSTM_Lib
         private String transactionID = null;
         private ISlaveService slave;
         private SortedList<int, PadInt> poolPadInt = new SortedList<int, PadInt>();
-        private int Status = 0; // 1 - in commit!!;
+        private int status = 0; //(1-commiting)
 
         public String getTransactionID() { return this.transactionID; }
 
@@ -269,7 +267,7 @@ namespace PADI_DSTM_Lib
                     if (!pair.Value.commitVaule(this, slave))
                     {
                         Console.WriteLine("throw new TxException();");
-                        throw new TxException();
+                        throw new TxException("TxCommitAUX->commitVaule Fail");
                     }
                 }
 
@@ -356,6 +354,39 @@ namespace PADI_DSTM_Lib
             }
         }
 
+        public static String txCompareTo(String transactionID1, String transactionID2)
+        {
+            if (transactionID1.CompareTo(transactionID2) > 0)
+            {
+                return transactionID2;
+            }
+            else if (transactionID1.CompareTo(transactionID2) < 0)
+            {
+                return transactionID1;
+            }
+            else throw new TxException("txCompareTo equal");
+        }
+        public bool TxAbort(String transactionID)
+        {
+            if (this.transactionID != transactionID)
+                throw new SystemException();
+            switch (status)
+            {
+                case 0:
+                    {
+                        //FIXME!
+                        return false;
+                        break;
+                    }
+                case 1:
+                    {
+                        return false;
+                        break;
+                    }
+                default: throw new TxException("TxAbort in default (não devia xegar aqui!?!)")
+            }
+
+        }
         //guarda os objectos acedidos. aka todos
 
         //begin aka construtor
