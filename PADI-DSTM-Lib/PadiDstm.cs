@@ -52,7 +52,12 @@ namespace PADI_DSTM_Lib
         }
         public static bool TxAbort() //SOMOS CONTRA O ABORTO!! PRO VIDA!!
         {
-            return true;
+            if (tx != null)
+            {
+                tx = null;
+                return true;
+            }
+            else return false;
         }
         public static bool Status()
         {
@@ -177,6 +182,7 @@ namespace PADI_DSTM_Lib
         {
             this.padInt = padInt;
             this.accessVersion = padInt.getVersion();
+            if (this.accessVersion == "none:0") { readedAux = true; }
             this.valueAux = padInt.getValue();
         }
 
@@ -210,7 +216,9 @@ namespace PADI_DSTM_Lib
 
     public class TxException : System.Exception
     {
-        //TODO
+        private String error;
+        TxException(String errorInf) {this.error = errorInf;}
+        public String toString() { return error; }
     }
 
     public class Transaction
@@ -327,7 +335,6 @@ namespace PADI_DSTM_Lib
             if (aux != null)
             {
                 poolPadInt.Add(uid, aux);
-                aux.Read();
                 return aux;
             }
             else return null; //!!Confirmado (Fabio: segundo o rafael)
