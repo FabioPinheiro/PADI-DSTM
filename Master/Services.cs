@@ -68,6 +68,9 @@ namespace Master
         {
             return slave.lockPadInt(uid, lockby);
         }
+        public bool CommitTransaction(Transaction t) {
+            return slave.CommitTransaction(t);
+        }
 
     }
     public class MasterServices : MarshalByRefObject, IMasterService

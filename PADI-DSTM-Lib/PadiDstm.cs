@@ -44,7 +44,13 @@ namespace PADI_DSTM_Lib
 
         public static bool TxCommit()
         {
-            return tx.TxCommit();
+            if (tx != null)
+            {
+                bool ret = slave.CommitTransaction(tx);
+                tx = null;
+                return ret;
+            }
+            else return false;
         }
         public static bool TxAbort() //SOMOS CONTRA O ABORTO!! PRO VIDA!!
         {
@@ -116,6 +122,7 @@ namespace PADI_DSTM_Lib
         bool setVaule(int uid, int value, String newVersion, String oldVersion);
         bool unlockPadInt(int uid, String lockby);
         bool lockPadInt(int uid, String lockby);
+        bool CommitTransaction(Transaction t);
     }
 
     [Serializable] //FIXME passar por referencia
@@ -167,7 +174,7 @@ namespace PADI_DSTM_Lib
         public String toString() { return ">ID=" + id + " valor=" + value + " version=" + version + " lockby=" + lockby + "; "; }
     }
 
-    public class PadInt // só existe no salve
+    public class PadInt
     { //read e write may throw TxException.
 
         private PadIntStored padInt;
@@ -219,6 +226,7 @@ namespace PADI_DSTM_Lib
         public String toString() { return error; }
     }
 
+    [Serializable]
     public class Transaction
     {
         private String transactionID = null;
@@ -227,6 +235,7 @@ namespace PADI_DSTM_Lib
         private int status = 0; //(1-commiting)
 
         public String getTransactionID() { return this.transactionID; }
+        public SortedList<int, PadInt> getPoolPadInt() { return poolPadInt; }
 
         public Transaction(int idServer, String timeStramp, ISlaveService slave)
         {
@@ -234,61 +243,6 @@ namespace PADI_DSTM_Lib
             this.slave = slave;
         }
 
-
-        private bool lockAllPadInt()
-        {
-            //bool locking = true; //FIXME
-            foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
-            {
-                if (!pair.Value.setLock(this, slave))
-                    return false;
-            }
-            return true; // consegui fazer look a todo
-        }
-        private bool unlockAllPadInt()
-        {
-            //bool locking = true; //FIXME
-            foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
-            {
-                if (!pair.Value.setUnlock(this, slave))
-                    return false;
-            }
-            return true; // consegui fazer look a todo
-        }
-        public bool TxCommitAUX()//FIXME muitos problemas de consistencia
-        {
-            Console.WriteLine("TxCommitAUX()");
-            try
-            {
-                lockAllPadInt(); //FIXME return ...
-                Console.WriteLine("lockAllPadInt()");
-                foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
-                {
-                    if (!pair.Value.commitVaule(this, slave))
-                    {
-                        Console.WriteLine("throw new TxException();");
-                        throw new TxException("TxCommitAUX->commitVaule Fail");
-                    }
-                }
-
-            }
-            finally { unlockAllPadInt(); } ///FIXME return ...
-            Console.WriteLine("DONE-TxCommitAUX()");
-            return true;
-        }
-
-        public bool TxCommit()
-        {
-            //Task taskA = new Task(() => TxCommitAUX());
-            //ThreadStart ts = new ThreadStart(this.TxCommitAUX()); 
-            Task<bool>[] taskArray = { Task<bool>.Factory.StartNew(() => this.TxCommitAUX()) };
-
-            Console.WriteLine("WAITNG !!!!");
-            taskArray[0].Wait();
-            //taskA.Wait();
-            return taskArray[0].Result;
-            //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
-        }
         private PadIntStored remotingAccessPadIntStored(int uid, bool toCreate)
         {
             if (toCreate)
@@ -353,58 +307,14 @@ namespace PADI_DSTM_Lib
                 else return null; //!!Confirmado (Fabio: segundo o rafael)
             }
         }
-        private static string timeFromId(String ts)
-        {
-           String[] words = ts.Split(':');
 
-           return words[1] + words[2] + words[3];
-       }
-        public static String txCompareTo(String transactionID1, String transactionID2)
-        {
-           String str1 = timeFromId(transactionID1);
-           String str2 = timeFromId(transactionID2);
-           int comp = DateTime.Compare(DateTime.Parse(str1), DateTime.Parse(str2));
-           if (comp <= 0)
-               return str1;
-           else
-               return str2;
-            /*
-            if (transactionID1.CompareTo(transactionID2) > 0)
-            {
-                return transactionID2;
-            }
-            else if (transactionID1.CompareTo(transactionID2) < 0)
-            {
-                return transactionID1;
-            }
-            else throw new TxException("txCompareTo equal");*/
-        }
-        public bool TxAbort(String transactionID)
-        {
-            if (this.transactionID != transactionID)
-                throw new SystemException();
-            switch (status)
-            {
-                case 0:
-                    {
-                        //FIXME!
-                        return false;
-                        break;
-                    }
-                case 1:
-                    {
-                        return false;
-                        break;
-                    }
-                default: throw new TxException("TxAbort in default (não devia xegar aqui!?!)");
-            }
-
-        }
         //guarda os objectos acedidos. aka todos
 
         //begin aka construtor
         //abort
         //commit
+
+
 
 
 
