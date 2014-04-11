@@ -383,7 +383,7 @@ namespace PADI_DSTM_Lib
                         return false;
                         break;
                     }
-                default: throw new TxException("TxAbort in default (não devia xegar aqui!?!)")
+                default: throw new TxException("TxAbort in default (não devia xegar aqui!?!)");
             }
 
         }
