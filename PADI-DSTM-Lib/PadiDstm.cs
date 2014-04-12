@@ -352,7 +352,7 @@ namespace PADI_DSTM_Lib
                 poolPadInt.Add(uid, aux);
                 return aux;
             }
-            else return null; //!!Confirmado (Fabio: segundo o rafael)
+            else return null; //!!Confirmado (Fabio: segundo o rafael) FIXME isto não devia devolver exection?
         }
 
         public PadInt AccessPadInt(int uid, ISlaveService slave)
@@ -367,7 +367,7 @@ namespace PADI_DSTM_Lib
                     poolPadInt.Add(uid, aux);
                     return aux;
                 }
-                else return null; //!!Confirmado (Fabio: segundo o rafael)
+                else return null; //!!Confirmado (Fabio: segundo o rafael) FIXME isto não devia devolver exection?
             }
         }
 
