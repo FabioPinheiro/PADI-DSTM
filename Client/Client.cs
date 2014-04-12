@@ -40,7 +40,7 @@ namespace Client
             pi_b.Write(37);
             Console.WriteLine("pi_b.Write(37);");
             res = PadiDstm.TxCommit();
-            Console.WriteLine("res = PadiDstm.TxCommit();");
+            Console.WriteLine("res = PadiDstm.TxCommit(); " + res);
             //res = PadiDstm.Freeze("tcp://localhost:8087/MyRemoteObjectName");
             Console.WriteLine("res = PadiDstm.Freeze(...)");
 

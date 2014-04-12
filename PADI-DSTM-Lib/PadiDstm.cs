@@ -46,6 +46,7 @@ namespace PADI_DSTM_Lib
         {
             if (tx != null)
             {
+                Console.WriteLine("TxCommit!!! SIM OUTRA VEZ!!");
                 bool ret = slave.CommitTransaction(tx);
                 tx = null;
                 return ret;
@@ -214,6 +215,7 @@ namespace PADI_DSTM_Lib
 
         public bool confirmVersion(ISlaveService slave)
         {
+            Console.WriteLine("confirmVersion TEM PROBLEMAS!! accessVersion " + accessVersion + "  ####  padint Version " + slave.accessPadiIntVersion(padInt.getID()));
             if (accessVersion == slave.accessPadiIntVersion(padInt.getID()))
                 return true;
             else return false;
@@ -221,7 +223,7 @@ namespace PADI_DSTM_Lib
 
         public bool commitVaule(String transactionID, ISlaveService slave)
         {
-            Console.WriteLine(this.toString());
+            Console.WriteLine("  TRANSACTION COMMITVALUE  " + this.toString());
 
             if (readedAux || writedAux)
             {
@@ -436,7 +438,7 @@ namespace PADI_DSTM_Lib
         private bool TxCommitAUX()//FIXME muitos problemas de consistencia
         {
             Console.WriteLine("TxCommitAUX()");
-            if (!reasonsForSuicide()) //tem motivos para isso !!
+            if (reasonsForSuicide()) //tem motivos para isso !!
             {
                 Console.WriteLine("TxCommitAUX -> reasonsForSuicide!!");
                 return false;
@@ -479,6 +481,7 @@ namespace PADI_DSTM_Lib
             Console.WriteLine("WAITNG !!!!");
             taskArray[0].Wait();
             //taskA.Wait();
+            Console.WriteLine("AFTER WAIT !!!!");
             return taskArray[0].Result;
             //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
         }

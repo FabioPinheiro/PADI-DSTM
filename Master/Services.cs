@@ -72,6 +72,7 @@ namespace Master
             return slave.accessPadiIntVersion(uid);
         }
         public bool CommitTransaction(Transaction t) {
+            Console.WriteLine("slave.CommitTransaction(t) SERVICES");
             return slave.CommitTransaction(t);
         }
 

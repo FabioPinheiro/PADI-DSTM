@@ -262,7 +262,7 @@ namespace Master
         public String accessPadiIntVersion(int uid) {
             PadIntStored  padint = accessPadInt(uid);
             if (padint != null) {
-                padint.getVersion();
+                return padint.getVersion();
             }
             return "ERROR:ERROR";
         }
@@ -323,6 +323,7 @@ namespace Master
         public bool CommitTransaction(Transaction t){
             TransactionWrapper newTx = new PADI_DSTM_Lib.TransactionWrapper(cs, t, this.port);
             transacções_state.Add(newTx);
+            Console.WriteLine("CommitTransaction no SLAVE!");
             return newTx.CommitTransaction(); //FIXME!!
         }
 
