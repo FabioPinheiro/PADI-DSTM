@@ -5,43 +5,68 @@ using System.Text;
 using System.Threading.Tasks;
 using PADI_DSTM_Lib;
 
-namespace OtherClient
+class Cicle
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main()
+        bool res;
+
+        PadiDstm.Init();
+
+        if ((args.Length > 0) && (args[0].Equals("C")))
         {
-            /*Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ClientForm());*/
-            Console.WriteLine("PRESS ENTER TO START THE CLIENT");
-            Console.ReadLine();
-
-            bool res;
-
-            PadiDstm.Init();
-            Console.WriteLine("Before recover");
-            //res = PadiDstm.Recover("tcp://localhost:8087/MyRemoteObjectName");
-            Console.WriteLine("After recover");
             res = PadiDstm.TxBegin();
-            PadInt pi_a = PadiDstm.CreatePadInt(3);
-            PadInt pi_b = PadiDstm.CreatePadInt(4);
+            PadInt pi_a = PadiDstm.CreatePadInt(2);
+            PadInt pi_b = PadiDstm.CreatePadInt(2000000001);
+            PadInt pi_c = PadiDstm.CreatePadInt(1000000000);
+            pi_a.Write(0);
+            pi_b.Write(0);
             res = PadiDstm.TxCommit();
-
-            PadiDstm.Status();
-
-            res = PadiDstm.TxBegin();
-            pi_a = PadiDstm.AccessPadInt(0);
-            pi_b = PadiDstm.AccessPadInt(1);
-            Console.WriteLine("a = " + pi_a.Read());
-            Console.WriteLine("b = " + pi_b.Read());
-            /*PadiDstm.Status();
-            // The following 3 lines assume we have 2 servers: one at port 2001 and another at port 2002
-            res = PadiDstm.Freeze("tcp://localhost:2001/Server");
-            res = PadiDstm.Recover("tcp://localhost:2001/Server");
-            res = PadiDstm.Fail("tcp://localhost:2002/Server");
-            res = PadiDstm.TxCommit();*/
-            Console.ReadLine();
         }
+        PadiDstm.Status();
+        Console.WriteLine("####################################################################");
+        Console.WriteLine("Finished creating PadInts. Press enter for 300 R/W transaction cycle.");
+        Console.WriteLine("####################################################################");
+        Console.ReadLine();
+        for (int i = 0; i < 300; i++)
+        {
+            res = PadiDstm.TxBegin();
+            PadInt pi_d = PadiDstm.AccessPadInt(2);
+            PadInt pi_e = PadiDstm.AccessPadInt(2000000001);
+            PadInt pi_f = PadiDstm.AccessPadInt(1000000000);
+            int d = pi_d.Read();
+            d++;
+            pi_d.Write(d);
+            int e = pi_e.Read();
+            e++;
+            pi_e.Write(e);
+            int f = pi_f.Read();
+            f++;
+            pi_f.Write(f);
+            Console.Write(".");
+            res = PadiDstm.TxCommit();
+            if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
+        }
+        Console.WriteLine("####################################################################");
+        Console.WriteLine("Status after cycle. Press enter for verification transaction.");
+        Console.WriteLine("####################################################################");
+        PadiDstm.Status();
+        Console.ReadLine();
+        res = PadiDstm.TxBegin();
+        PadInt pi_g = PadiDstm.AccessPadInt(2);
+        PadInt pi_h = PadiDstm.AccessPadInt(2000000001);
+        PadInt pi_j = PadiDstm.AccessPadInt(1000000000);
+        int g = pi_g.Read();
+        int h = pi_h.Read();
+        int j = pi_j.Read();
+        res = PadiDstm.TxCommit();
+        Console.WriteLine("####################################################################");
+        Console.WriteLine("2 = " + g);
+        Console.WriteLine("2000000001 = " + h);
+        Console.WriteLine("1000000000 = " + j);
+        Console.WriteLine("Status post verification transaction. Press enter for exit.");
+        Console.WriteLine("####################################################################");
+        PadiDstm.Status();
+        Console.ReadLine();
     }
 }

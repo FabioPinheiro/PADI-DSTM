@@ -161,6 +161,7 @@ namespace Master
                     padIntsLocation[location] = port;
                     myResponsability.Add(location, new SortedList<int, PadIntStored>());
                     aux = new PadIntStored(uid);
+                    aux.setVersion(port + ":" + DateTime.Now.ToString("s"));
                     myResponsability[location].Add(uid, aux);
                     return aux;
                 }

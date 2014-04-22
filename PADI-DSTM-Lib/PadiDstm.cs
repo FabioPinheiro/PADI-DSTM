@@ -170,6 +170,9 @@ namespace PADI_DSTM_Lib
             }
             else return false;
         }
+        public void setVersion(String newVersion) {
+            version = newVersion;
+        }
         public int getID() { return id; }
         public int getValue() { return value; }
         public String getVersion() { return version; }
@@ -215,7 +218,7 @@ namespace PADI_DSTM_Lib
 
         public bool confirmVersion(ISlaveService slave)
         {
-            Console.WriteLine("confirmVersion TEM PROBLEMAS!! accessVersion " + accessVersion + "  ####  padint Version " + slave.accessPadiIntVersion(padInt.getID()));
+            Console.WriteLine("confirmVersion TEM PROBLEMAS!! accessVersion " + accessVersion + "  ####  padint Version " + slave.accessPadiIntVersion(padInt.getID()) + "  RESULT  " + (accessVersion == slave.accessPadiIntVersion(padInt.getID())));
             if (accessVersion == slave.accessPadiIntVersion(padInt.getID()))
                 return true;
             else return false;
@@ -438,7 +441,7 @@ namespace PADI_DSTM_Lib
         private bool TxCommitAUX()//FIXME muitos problemas de consistencia
         {
             Console.WriteLine("TxCommitAUX()");
-            if (reasonsForSuicide()) //tem motivos para isso !!
+            if (!reasonsForSuicide()) //tem motivos para isso !!
             {
                 Console.WriteLine("TxCommitAUX -> reasonsForSuicide!!");
                 return false;
@@ -491,12 +494,14 @@ namespace PADI_DSTM_Lib
         {
             String[] words = ts.Split(':');
 
-            return words[1] + words[2] + words[3];
+            return words[1] + ":" + words[2] + ":" + words[3];
         }
         public static String txCompareTo(String transactionID1, String transactionID2)
         {
+            Console.WriteLine("transactionID1: " + transactionID1 + "   transactionID2: " + transactionID2);
             String str1 = timeFromId(transactionID1);
             String str2 = timeFromId(transactionID2);
+            Console.WriteLine("str1: " + str1 + "   str2: " + str2);
             int comp = DateTime.Compare(DateTime.Parse(str1), DateTime.Parse(str2));
             if (comp <= 0)
                 return str1;
