@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace PADI_DSTM_Lib
+namespace PADI_DSTM
 {
 
     public class PadiDstm
@@ -393,27 +393,33 @@ namespace PADI_DSTM_Lib
         private String timeStramp;
         private ISlaveService slave;
         private State state;
-        public String getTransactionWrapperID() { return Convert.ToString(port) + ":" + timeStramp; } //FIXME EEEEEEEE
+        public String getTransactionWrapperID() { return timeStramp + ":" + Convert.ToString(port) + ":" + Convert.ToString(counter); } //FIXME EEEEEEEE
         private Transaction transaction;
         private int port;
+        private Int64 counter;
 
-        public TransactionWrapper(ISlaveService slave, Transaction transaction, int port) //FIXME remove port
+        public TransactionWrapper(ISlaveService slave, Transaction transaction, int port, Int64 counter) //FIXME remove port
         {
             this.port = port; //FIXME é para remover!!!
             this.slave = slave;
             this.transaction = transaction;
             timeStramp = DateTime.Now.ToString("s");
             state = State.possibleToAbort;
+            this.counter = counter;
         }
 
         //###########################################################
 
-        private bool lockAllPadInt()
+        private bool lockAllPadIntAndCheckVersion()
         {
             foreach (KeyValuePair<int, PadInt> pair in transaction.getPoolPadInt())
             {
                 if (!pair.Value.setLock(getTransactionWrapperID(), slave))
                     return false;
+                else {
+                    if (!pair.Value.confirmVersion(slave))
+                        return false;
+                }
                 if (state == State.Abort)
                     return false;
             }
@@ -450,7 +456,7 @@ namespace PADI_DSTM_Lib
             {
                 try
                 {
-                    if (!lockAllPadInt())
+                    if (!lockAllPadIntAndCheckVersion())
                         return false;
                     if (state == State.Abort) //FIXME não é atomico parte1; é facil de resolver mas tb é preciso de ter azar!!
                         return false;
@@ -494,7 +500,7 @@ namespace PADI_DSTM_Lib
         {
             String[] words = ts.Split(':');
 
-            return words[1] + ":" + words[2] + ":" + words[3];
+            return words[0] + ":" + words[1] + ":" + words[2];
         }
         public static String txCompareTo(String transactionID1, String transactionID2)
         {
@@ -503,7 +509,7 @@ namespace PADI_DSTM_Lib
             String str2 = timeFromId(transactionID2);
             Console.WriteLine("str1: " + str1 + "   str2: " + str2);
             int comp = DateTime.Compare(DateTime.Parse(str1), DateTime.Parse(str2));
-            if (comp <= 0)
+            if (comp < 0)
                 return str1;
             else
                 return str2;
@@ -518,6 +524,7 @@ namespace PADI_DSTM_Lib
             else return false;
 
         }
+
         //guarda os objectos acedidos. aka todos
 
         //begin aka construtor

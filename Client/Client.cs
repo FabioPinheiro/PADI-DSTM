@@ -7,7 +7,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
-using PADI_DSTM_Lib;
+using PADI_DSTM;
 
 namespace Client
 {
@@ -40,6 +40,8 @@ namespace Client
             pi_b.Write(37);
             Console.WriteLine("pi_b.Write(37);");
             res = PadiDstm.TxCommit();
+
+
             Console.WriteLine("res=" + res + "  PadiDstm.TxCommit();");
             //res = PadiDstm.Freeze("tcp://localhost:8087/MyRemoteObjectName");
             Console.WriteLine("res = PadiDstm.Freeze(...)");
@@ -55,12 +57,34 @@ namespace Client
 
             Console.WriteLine("a = " + pi_a.Read());
             Console.WriteLine("b = " + pi_b.Read());
+            res = PadiDstm.TxCommit();
+
+
+            Console.WriteLine("read again  => PRESS ENTER");
+            Console.Read();
+            PadiDstm.Status();
+            Console.WriteLine("after status callBegin again");
+            res = PadiDstm.TxBegin();
+            Console.WriteLine("PadiDstm.TxBegin()");
+            pi_a = PadiDstm.AccessPadInt(0);
+            Console.WriteLine("PadiDstm.AccessPadInt(0)");
+            pi_b = PadiDstm.AccessPadInt(1);
+            Console.WriteLine("PadiDstm.AccessPadInt(1)");
+
+            Console.WriteLine("a = " + pi_a.Read());
+            Console.WriteLine("b = " + pi_b.Read());
+            res = PadiDstm.TxCommit();
+
             /*
             // The following 3 lines assume we have 2 servers: one at port 2001 and another at port 2002
             res = PadiDstm.Freeze("tcp://localhost:2001/Server");
             res = PadiDstm.Recover("tcp://localhost:2001/Server");
             res = PadiDstm.Fail("tcp://localhost:2002/Server");
             res = PadiDstm.TxCommit();*/
+
+            Console.WriteLine("Last Status");
+            PadiDstm.Status();
+
             Console.ReadLine();
         }
     }

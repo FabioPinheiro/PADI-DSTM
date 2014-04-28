@@ -6,7 +6,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
-using PADI_DSTM_Lib;
+using PADI_DSTM;
 using System.Collections;
 
 

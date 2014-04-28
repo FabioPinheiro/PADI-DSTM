@@ -7,7 +7,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
-using PADI_DSTM_Lib;
+using PADI_DSTM;
 using System.Collections;
 
 namespace Master
@@ -29,6 +29,7 @@ namespace Master
         IMasterService master;
         IDictionary propBag;
         private int port;
+        private Counter counter;//adicionar a Version da transacçao.
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key is the hash, value is the port of the slave that is responsable for that hash
         SortedList<int, SortedList<int, PadIntStored>> myResponsability = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
@@ -41,7 +42,7 @@ namespace Master
             propBag = new Hashtable();
             propBag["name"] = ""; // "Each channel must have a unique name. Set this property to an empty string ("" or String.Empty) 
             //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
-            
+            counter = new Counter();
             cs = new SlaveServices(this);
         }
         public void registSlave()
@@ -146,6 +147,8 @@ namespace Master
                     return myResponsability[hashUid(uid)][uid].getVersion() == "none:0" ? myResponsability[hashUid(uid)][uid] : null;
                 }
                 aux = new PadIntStored(uid);
+                aux.setVersion(DateTime.Now.ToString("s") + ":" + port + ":" + counter.update());
+
                 myResponsability[hashUid(uid)].Add(uid, aux);
                 return aux;
             }
@@ -161,7 +164,7 @@ namespace Master
                     padIntsLocation[location] = port;
                     myResponsability.Add(location, new SortedList<int, PadIntStored>());
                     aux = new PadIntStored(uid);
-                    aux.setVersion(port + ":" + DateTime.Now.ToString("s"));
+                    aux.setVersion( DateTime.Now.ToString("s") + ":" + port + ":" + counter.update());
                     myResponsability[location].Add(uid, aux);
                     return aux;
                 }
@@ -242,9 +245,9 @@ namespace Master
             if (isMine(uid))
             {
                 if (!myResponsability[hashUid(uid)][uid].lockPadInt(lockby)) {
-                    String beenLockedBy = myResponsability[hashUid(uid)][uid].getLockby();
-                    String killed = TransactionWrapper.txCompareTo(lockby,beenLockedBy);
-
+                   // String beenLockedBy = myResponsability[hashUid(uid)][uid].getLockby();
+                   // String killed = TransactionWrapper.txCompareTo(lockby,beenLockedBy);
+                    return false;
                 }
                 return true;
             }
@@ -322,11 +325,33 @@ namespace Master
 
         //###########################################################
         public bool CommitTransaction(Transaction t){
-            TransactionWrapper newTx = new PADI_DSTM_Lib.TransactionWrapper(cs, t, this.port);
+            TransactionWrapper newTx = new PADI_DSTM.TransactionWrapper(cs, t, this.port, counter.update());
             transacções_state.Add(newTx);
             Console.WriteLine("CommitTransaction no SLAVE!");
             return newTx.CommitTransaction(); //FIXME!!
         }
+        private Int64 incCounter() {
+            lock (counter)
+            {
+                return counter.update();
+            }
 
+        }
+
+    }
+
+    public class Counter {
+        private Int64 counter;
+
+        public Counter()
+        {
+            counter = 0;
+        }
+        public Int64 get() {
+            return counter;
+        }
+        public Int64 update() {
+            return counter++;
+        } 
     }
 }
