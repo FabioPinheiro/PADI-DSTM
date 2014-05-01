@@ -132,7 +132,7 @@ namespace PADI_DSTM
         private String version = "none:0";
         private int id;
         private int value;
-        private String lockby = "none";
+        private String lockby = "none"; //Transaction ID que tem time/port/counter 
 
         public String getLockby() { return lockby; }
         public PadIntStored(int uid)
@@ -423,7 +423,7 @@ namespace PADI_DSTM
                 if (state == State.Abort)
                     return false;
             }
-            return true; // consegui fazer look a todo
+            return true; // consegui fazer look a tudo
         }
         private bool unlockAllPadIntLocked()
         {
@@ -458,6 +458,7 @@ namespace PADI_DSTM
                 {
                     if (!lockAllPadIntAndCheckVersion())
                         return false;
+                    //check this!!
                     if (state == State.Abort) //FIXME não é atomico parte1; é facil de resolver mas tb é preciso de ter azar!!
                         return false;
                     else
@@ -502,24 +503,79 @@ namespace PADI_DSTM
 
             return words[0] + ":" + words[1] + ":" + words[2];
         }
-        public static String txCompareTo(String transactionID1, String transactionID2)
+        private static string portFromId(String tId) {
+            String[] words = tId.Split(':');
+
+            return words[3];
+        }
+        private static string counterFromId(String tId)
         {
-            Console.WriteLine("transactionID1: " + transactionID1 + "   transactionID2: " + transactionID2);
+            String[] words = tId.Split(':');
+
+            return words[4];
+        }
+        private static long compareIntsInStrings(String str1, String str2) {
+            return Convert.ToInt64(str1) - Convert.ToInt64(str2);
+        }
+        public static bool txCompareTo(String transactionID1, String transactionID2)
+        {
+            Console.WriteLine("Comparing Transactions => transactionID1: " + transactionID1 + "   transactionID2: " + transactionID2);
             String str1 = timeFromId(transactionID1);
             String str2 = timeFromId(transactionID2);
             Console.WriteLine("str1: " + str1 + "   str2: " + str2);
+            bool suicide = false;
+            bool kill = true;
             int comp = DateTime.Compare(DateTime.Parse(str1), DateTime.Parse(str2));
             if (comp < 0)
-                return str1;
+                return kill;
+            else if(comp > 0){
+                return suicide;
+                }
             else
-                return str2;
+            {
+                str1 = portFromId(transactionID1);
+                str2 = portFromId(transactionID2);
+                //Port
+                long aux = compareIntsInStrings(str1, str2);
+                if(aux < 0){
+                    return kill;
+                    //port > 0
+                   
+                }
+                else if (aux > 0) {
+                    return suicide;
+                }
+                    //Counter
+                else {
+                    str1 = counterFromId(transactionID1);
+                    str2 = counterFromId(transactionID2);
+                    aux = compareIntsInStrings(str1, str2);
+                    if (aux < 0)
+                    {
+                        return kill;
+                        //port > 0
+
+                    }
+                    else if (aux >0) {
+                        return suicide;
+                    }
+                    else
+                    {
+                        //HELL FROZEN :| :| DANGER DANGER
+                        return suicide; //
+                    }
+                }
+
+            }
         }
         public bool AbortTransaction()
         {
             if (state == State.possibleToAbort)
             {
                 state = State.Abort;
+                Console.WriteLine("### I will abort " + getTransactionWrapperID());
                 return true;
+               
             }
             else return false;
 

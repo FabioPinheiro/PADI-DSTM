@@ -37,6 +37,7 @@ namespace Master
                 Slave slave = new Slave();
                 slave.registSlave();
                 System.Console.Read();
+                Console.WriteLine("Foram mortos: " + slave.matei);
             }
 
 

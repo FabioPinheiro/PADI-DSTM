@@ -23,6 +23,7 @@ namespace Master
         private const int DETH = -1;
         static int currentStatus;
 
+        public int matei = 0;
         public TcpChannel channelToOut; //change to a list or something of tcpChannel
         public TcpChannel channelListening;
         SlaveServices cs;
@@ -245,9 +246,30 @@ namespace Master
             if (isMine(uid))
             {
                 if (!myResponsability[hashUid(uid)][uid].lockPadInt(lockby)) {
-                   // String beenLockedBy = myResponsability[hashUid(uid)][uid].getLockby();
-                   // String killed = TransactionWrapper.txCompareTo(lockby,beenLockedBy);
-                    return false;
+                    //get the Transaction ID of the lock, in the ID has the port of the slave.
+                   String beenLockedBy = myResponsability[hashUid(uid)][uid].getLockby(); 
+                    //Decide who to kill
+                   bool suicide = false;
+                   bool toKill = TransactionWrapper.txCompareTo(lockby,beenLockedBy);
+                   if (!toKill)
+                   {
+                       return suicide;
+                   }
+                   else
+                   {
+                       //I will try to kill
+                       if (/*I killed*/tryToKill(beenLockedBy))
+                       {
+                           //TODO make kill function! muahahahah
+                           Console.WriteLine("##################### I Killed: " + beenLockedBy + " $$$ ");
+                           matei++;
+                           return !suicide;
+                       }
+                       else
+                       {
+                           return suicide;
+                       }
+                   }
                 }
                 return true;
             }
@@ -263,6 +285,23 @@ namespace Master
                 }
             }
         }
+        private bool tryToKill(String tId) 
+        { 
+            //Find the transaction
+            TransactionWrapper t = findTransaction(tId);
+            if (t == null)
+            {
+                return false;
+            }
+            //AbortTransaction()
+            bool willAbort =  t.AbortTransaction();
+            //Inform that it will die.
+                //Call the function
+            //Get the result
+            return willAbort; //return false if not.
+        }
+
+
         public String accessPadiIntVersion(int uid) {
             PadIntStored  padint = accessPadInt(uid);
             if (padint != null) {
@@ -337,6 +376,15 @@ namespace Master
             }
 
         }
+        private TransactionWrapper findTransaction(String tId) {
+            foreach (TransactionWrapper t in transacções_state) {
+                if (String.Equals(t.getTransactionWrapperID(), tId))
+                    return t;
+            }
+                return null;
+            }
+
+     
 
     }
 
