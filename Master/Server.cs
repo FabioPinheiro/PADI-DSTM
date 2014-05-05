@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,6 +38,7 @@ namespace Master
                 slave.registSlave();
                 System.Console.Read();
                 Console.WriteLine("Foram mortos: " + slave.matei);
+                Console.WriteLine("foram abortados: " + slave.abortou);
             }
 
 
