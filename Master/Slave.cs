@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,6 +24,7 @@ namespace Master
         static int currentStatus;
 
         public int matei = 0;
+        public int abortou = 0;
         public TcpChannel channelToOut; //change to a list or something of tcpChannel
         public TcpChannel channelListening;
         SlaveServices cs;
@@ -367,7 +368,9 @@ namespace Master
             TransactionWrapper newTx = new PADI_DSTM.TransactionWrapper(cs, t, this.port, counter.update());
             transacções_state.Add(newTx);
             Console.WriteLine("CommitTransaction no SLAVE!");
-            return newTx.CommitTransaction(); //FIXME!!
+            bool aux= newTx.CommitTransaction(); //FIXME!!
+            abortou += newTx.abortou;
+            return aux;
         }
         private Int64 incCounter() {
             lock (counter)
