@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting;
@@ -242,6 +242,11 @@ namespace PADI_DSTM
     {
         private String error;
         public TxException(String errorInf) { this.error = errorInf; }
+
+        public TxException()
+        {
+            // TODO: Complete member initialization
+        }
         public String toString() { return error; }
     }
 
@@ -389,7 +394,7 @@ namespace PADI_DSTM
 
     public class TransactionWrapper
     {
-        enum State { possibleToAbort, impossibleToAbort, Abort };
+        enum State { possibleToAbort=1, impossibleToAbort=2, Abort=3 };
         private String timeStramp;
         private ISlaveService slave;
         private State state;
@@ -397,6 +402,8 @@ namespace PADI_DSTM
         private Transaction transaction;
         private int port;
         private Int64 counter;
+        private Object lockState = new Object();
+        public int abortou = 0;
 
         public TransactionWrapper(ISlaveService slave, Transaction transaction, int port, Int64 counter) //FIXME remove port
         {
@@ -420,7 +427,7 @@ namespace PADI_DSTM
                     if (!pair.Value.confirmVersion(slave))
                         return false;
                 }
-                if (state == State.Abort)
+                if (readState() == State.Abort)
                     return false;
             }
             return true; // consegui fazer look a tudo
@@ -459,11 +466,16 @@ namespace PADI_DSTM
                     if (!lockAllPadIntAndCheckVersion())
                         return false;
                     //check this!!
-                    if (state == State.Abort) //FIXME não é atomico parte1; é facil de resolver mas tb é preciso de ter azar!!
+                    
+                    if (readState() == State.Abort)
+                    { 
+                        abortou++;
                         return false;
+
+                    }
                     else
                     {
-                        state = State.impossibleToAbort; //FIXME não é atomico parte2; é facil de resolver mas tb é preciso de ter azar!!
+                        changeState(State.impossibleToAbort); //FIXME não é atomico parte2; é facil de resolver mas tb é preciso de ter azar!!
                         foreach (KeyValuePair<int, PadInt> pair in this.transaction.getPoolPadInt())
                         {
                             if (!pair.Value.commitVaule(getTransactionWrapperID(), slave))
@@ -570,9 +582,9 @@ namespace PADI_DSTM
         }
         public bool AbortTransaction()
         {
-            if (state == State.possibleToAbort)
+            if (readState() == State.possibleToAbort)
             {
-                state = State.Abort;
+                changeState(State.Abort);
                 Console.WriteLine("### I will abort " + getTransactionWrapperID());
                 return true;
                
@@ -581,6 +593,27 @@ namespace PADI_DSTM
 
         }
 
+
+        private void changeState(State status) {
+           
+            lock (lockState)
+            {
+                if (status == State.impossibleToAbort && state == State.Abort)
+                    throw new TxException("ChangeState, ImpossibleToAbort when it was to Abort");
+                state=status;
+            }
+        }
+
+        private State readState() {
+
+            State aux;
+            lock (lockState) {
+
+                aux = state;
+            }
+
+            return aux;
+        }
         //guarda os objectos acedidos. aka todos
 
         //begin aka construtor
