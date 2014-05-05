@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting;
@@ -470,12 +470,13 @@ namespace PADI_DSTM
                     if (!lockAllPadIntAndCheckVersion())
                         return false;
                     //check this!!
+
+                    }
                     else
                     {
 
                         //Em teoria nunca vai chegar aqui... pois aborta antes
-                        if (readState() == State.Abort)
-                        {
+                        if (readState() == State.Abort)                        {
 
                             abortou++;
                             throw new Exception(); //Remove this after debug
