@@ -425,12 +425,16 @@ namespace PADI_DSTM
                     return false;
                 else {
                     if (!pair.Value.confirmVersion(slave))
+                    {
+                        unlockAllPadIntLocked();
                         return false;
+                    }
                 }
                 if (readState() == State.Abort)
                 {
                    //PAssa por aqui!!! Wich is good :D
                     abortou++;
+                    unlockAllPadIntLocked();
                     return false;
                 }
             }
@@ -627,12 +631,6 @@ namespace PADI_DSTM
 
             return aux;
         }
-        //guarda os objectos acedidos. aka todos
-
-        //begin aka construtor
-        //abort
-        //commit
-
 
 
 
