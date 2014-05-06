@@ -248,7 +248,7 @@ namespace Master
             {
                 if (!myResponsability[hashUid(uid)][uid].lockPadInt(lockby)) {
                     //get the Transaction ID of the lock, in the ID has the port of the slave.
-                   String beenLockedBy = myResponsability[hashUid(uid)][uid].getLockby(); 
+                   /*String beenLockedBy = myResponsability[hashUid(uid)][uid].getLockby(); 
                     //Decide who to kill
                    bool suicide = false;
                    bool toKill = TransactionWrapper.txCompareTo(lockby,beenLockedBy);
@@ -259,7 +259,7 @@ namespace Master
                    else
                    {
                        //I will try to kill
-                       if (/*I killed*/tryToKill(beenLockedBy))
+                       if (tryToKill(beenLockedBy)) //se eu matei
                        {
                            //TODO make kill function! muahahahah
                            Console.WriteLine("##################### I Killed: " + beenLockedBy + " $$$ ");
@@ -270,7 +270,8 @@ namespace Master
                        {
                            return suicide;
                        }
-                   }
+                   } */
+                   return false;
                 }
                 return true;
             }

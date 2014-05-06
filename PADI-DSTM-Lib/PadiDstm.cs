@@ -206,6 +206,7 @@ namespace PADI_DSTM
         public bool setLock(String transactionID, ISlaveService slave)
         {
             lockedAux = slave.lockPadInt(padInt.getID(), transactionID);
+
             return lockedAux;
         }
         public bool setUnlock(String transactionID, ISlaveService slave)
@@ -445,7 +446,9 @@ namespace PADI_DSTM
             foreach (KeyValuePair<int, PadInt> pair in transaction.getPoolPadInt())
             {
                 if (pair.Value.islockedAux() /*evita fazer unlock as variavei que não estão lock*/ && !pair.Value.setUnlock(getTransactionWrapperID(), slave))
-                    return false;
+                {
+                    throw new TxException("UnlockAllPadIntLocked");
+                }
             }
             return true; // consegui fazer unlook a todo
         }
@@ -480,7 +483,7 @@ namespace PADI_DSTM
                     {
 
                         //Em teoria nunca vai chegar aqui... pois aborta antes
-                        if (readState() == State.Abort)                        {
+                        if (readState() == State.Abort){
 
                             abortou++;
                             throw new Exception(); //Remove this after debug
