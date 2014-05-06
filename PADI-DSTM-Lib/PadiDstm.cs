@@ -107,6 +107,7 @@ namespace PADI_DSTM
         bool recover(String url);
         bool fail(String url);
         bool status();
+        bool ping(int slaveId);
 
     }
     public interface ISlaveService

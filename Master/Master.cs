@@ -29,7 +29,9 @@ namespace Master
         TcpChannel channelOut;
         MasterServices ms;
         IDictionary propBag;
-        SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value to be decided ; o port identifica o slave.
+        SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value Live or Dead; o port identifica o slave.
+        //SortedList<int, int> slavesMonitor = new SortedList<int, int>(); //key port, value 1 or 0. 1 had received the ping, 0 haven't received the ping
+        Dictionary<int, int> slavesMonitor = new Dictionary<int, int>();
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key hash pie; value Port
         SortedList<int, SortedList<int, PadIntStored>> myResponsability = new SortedList<int, SortedList<int, PadIntStored>>(); //key rest: value: key port, value PadInt
         int port = 8087;
@@ -48,6 +50,10 @@ namespace Master
             {
                 numberOfSlaves++;
                 slaves.Add(port, port); //TODO correct this
+                lock (slavesMonitor)
+                {
+                    slavesMonitor.Add(port, 1);
+                }
                 return port++;
             }
         }
@@ -259,7 +265,50 @@ namespace Master
             return Convert.ToInt32(words[4]);
         }
 
+        //monitor part
+        public bool ping(int slaveId)
+        {
+            lock (slavesMonitor)
+            {
+                Console.WriteLine("O " + slaveId + " I'm alive recebido");
+                slavesMonitor[slaveId] = 1;
+                return true;
+            }
+        }
+
+        public void checkMonitor() {
+            while(true){
+                System.Threading.Thread.Sleep(1500);
+                lock(slavesMonitor){
+                    foreach (KeyValuePair<int, int> kvp in slavesMonitor.ToArray())
+                    {
+                        Console.WriteLine("estou dentro do for");
+                        if (kvp.Value == 1)
+                        {
+                            slavesMonitor[kvp.Key] = 0;
+                            Console.WriteLine(slavesMonitor[kvp.Key]);
+                            Console.WriteLine(kvp.Key + " IS alive :D :D");
+                        }
+                        else
+                        {
+                            //check if it's "kvp.Key" is dead 
+                            Console.WriteLine("Oi? Morreu?");
+                        }
+                        Console.WriteLine("sai");
+                         
+                    }
+                }
+                System.Threading.Thread.Sleep(1500);
+            }
+        }
+
+        
+
+
+
     }
+
+      
 
 
 

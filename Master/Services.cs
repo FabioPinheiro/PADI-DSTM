@@ -140,6 +140,9 @@ namespace Master
         {
             return master.status();
         }
+        public bool ping(int slaveId) {
+            return master.ping(slaveId);
+        }
 
     }
 }

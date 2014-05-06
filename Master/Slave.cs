@@ -35,8 +35,37 @@ namespace Master
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key is the hash, value is the port of the slave that is responsable for that hash
         SortedList<int, SortedList<int, PadIntStored>> myResponsability = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
-        //############# EXISTE EM TODOS OS SERVIDORES ###############################
+
+        //$$$$$$$$ COORDENADOR
         List<TransactionWrapper> transacções_state = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
+        //############# EXISTE EM TODOS OS SERVIDORES ###############################
+       
+
+        //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        //Substituir por uma lista de history.
+
+        SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
+        //$$$$$$$$ COORDENADOR
+        List<TransactionWrapper> transacções_state_Replication = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
+
+        public bool moveReplic(int slaveId) {
+
+            return true;
+        }
+
+        public void monitor()
+        {
+
+            while (currentStatus == LIVE )
+            {
+                System.Threading.Thread.Sleep(1000);
+                Console.WriteLine("olá");
+                master.ping(port);
+            }
+
+        }
+
+        //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         public Slave()
         {
             channelToOut = new TcpChannel();
@@ -405,5 +434,32 @@ namespace Master
         public Int64 update() {
             return counter++;
         } 
+    }
+
+    public class History {
+        int slaveId; //o porto
+        SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
+        //$$$$$$$$ COORDENADOR
+        List<TransactionWrapper> transacções_state_Replication = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
+
+        public History(int port) {
+             slaveId = port;
+        }
+
+        public void compare(SortedList<int, SortedList<int, PadIntStored>> l1, SortedList<int, SortedList<int, PadIntStored>> l2) {
+        
+        }
+        public void compare(List<TransactionWrapper> l1, List<TransactionWrapper> l2) { 
+        
+        }
+
+        //Recupera um servidor
+        public void restore() { }
+
+        //Trata como sendo um novo.
+        public void reCreate() { }
+
+  
+    
     }
 }
