@@ -210,6 +210,7 @@ namespace Master
             Console.WriteLine("Faz recover " + url);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
             slaves.Add(getPortFromUrl(url), getPortFromUrl(url));
+            addToActives(getPortFromUrl(url));
             slave.recover();
             return true;
         }
@@ -326,6 +327,8 @@ namespace Master
                         {
                             //check if it's "kvp.Key" is dead
                             removeFromActives(kvp.Key);
+
+                            //call Replication methods.
                             Console.WriteLine("Removed from Actives "+ kvp.Key);
                         }
                         Console.WriteLine("sai");
@@ -335,7 +338,7 @@ namespace Master
                 System.Threading.Thread.Sleep(2000);
             }
         }
-        private bool removeFromActives(int slaveId) {
+        private void removeFromActives(int slaveId) {
             lock (slaves)
             {
                 slaves[slaveId] = -1;
@@ -345,7 +348,19 @@ namespace Master
                 slavesMonitor.Remove(slaveId);
             
             }
-            return false;
+        }
+        private void addToActives(int slaveId) {
+            lock (slaves)
+            {
+                slaves[slaveId] = 1;
+            }
+            lock (slavesMonitor)
+            {
+                //Console.WriteLine("removendo o" + slaveId);
+                slavesMonitor.Add(slaveId, 1);
+
+            }
+            
         }
 
         

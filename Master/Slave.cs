@@ -443,7 +443,7 @@ namespace Master
     }
 
     public class History {
-        int slaveId; //o porto
+        int slaveId; //o slave que está a replicar
         SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
         //$$$$$$$$ COORDENADOR
         List<TransactionWrapper> transacções_state_Replication = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
@@ -465,7 +465,18 @@ namespace Master
         //Trata como sendo um novo.
         public void reCreate() { }
 
-  
+        //Recebe uma lista e adiciona a replicação
+        public void addToReplic(SortedList<int, SortedList<int, PadIntStored>> rep) {
+        
+        }
+        //adiciona uma parte da hash a replicação
+        public void addToReplic(int hasnumber, SortedList<int, PadIntStored> list)
+        {
+
+        }
+
+
+
     
     }
 }

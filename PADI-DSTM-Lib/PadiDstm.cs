@@ -441,10 +441,15 @@ namespace PADI_DSTM
             foreach (KeyValuePair<int, PadInt> pair in transaction.getPoolPadInt())
             {
                 if (!pair.Value.setLock(getTransactionWrapperID(), slave))
+                {
+                    //manda nack
                     return false;
-                else {
+                }
+                else
+                {
                     if (!pair.Value.confirmVersion(slave))
                     {
+                        //manda nack
                         unlockAllPadIntLocked();
                         return false;
                     }
@@ -453,10 +458,13 @@ namespace PADI_DSTM
                 {
                    //PAssa por aqui!!! Wich is good :D
                     abortou++;
+                    //manda nack
                     unlockAllPadIntLocked();
                     return false;
                 }
+                //manda ack ao coordenador.
             }
+
             return true; // consegui fazer look a tudo
         }
         private bool unlockAllPadIntLocked()
