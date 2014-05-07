@@ -29,7 +29,7 @@ namespace Master
         TcpChannel channelOut;
         MasterServices ms;
         IDictionary propBag;
-        SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value Live or Dead; o port identifica o slave.
+        SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value Live(1) or Dead(-1); o port identifica o slave.
         //SortedList<int, int> slavesMonitor = new SortedList<int, int>(); //key port, value 1 or 0. 1 had received the ping, 0 haven't received the ping
         Dictionary<int, int> slavesMonitor = new Dictionary<int, int>();
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key hash pie; value Port
@@ -61,8 +61,19 @@ namespace Master
         {
             lock (slaves)
             {
-                System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin % numberOfSlaves);
-                return slaves[8087 + (roundRobin++ % numberOfSlaves)];
+                //System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin % numberOfSlaves);
+                int aux = slaves[8087 + (roundRobin++ % numberOfSlaves)];
+                int i= 0;
+                while (i < numberOfSlaves) {
+                    if (slaves[aux] != -1) //check if it's alive :D
+                    {
+                        return aux;
+                    }
+                    else { 
+                        aux++;
+                    }
+                }
+                return 0; //no slaves found
             }
         }
         public MasterServices getMasterServices()
@@ -165,12 +176,15 @@ namespace Master
             {
                 //add a lista
                 padIntsLocation.Add(hash, port);
-                //envia a info para todos: Melhorar se houver tempo
-                foreach (KeyValuePair<int, int> kvp in slaves)
+                lock (slaves)
                 {
-                    Console.WriteLine("comunica com " + kvp.Key);
-                    ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
-                    slave.setResponsability(port, hash);
+                    //envia a info para todos: Melhorar se houver tempo
+                    foreach (KeyValuePair<int, int> kvp in slaves)
+                    {
+                        Console.WriteLine("comunica com " + kvp.Key);
+                        ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
+                        slave.setResponsability(port, hash);
+                    }
                 }
                 return true;
             }
@@ -197,7 +211,15 @@ namespace Master
 
             slaves.Remove(getPortFromUrl(url));
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
-            return slave.fail();
+            if (slave.fail())
+            {
+               removeFromActives(slave.getSlaveId());
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         public bool status()
         {
@@ -238,15 +260,18 @@ namespace Master
         {
             System.Console.WriteLine("Master current status: " + getStatus());
             System.Console.WriteLine(slaves.Count() + " Registed slaves: ");
-            foreach (KeyValuePair<int, int> kvp in slaves)
+            lock (slaves)
             {
-                Console.WriteLine(" - " + kvp.Key + " - Responsible for:");
-                foreach (KeyValuePair<int, int> locationPair in padIntsLocation)
+                foreach (KeyValuePair<int, int> kvp in slaves)
                 {
-                    if (locationPair.Value == kvp.Key)
-                        Console.Write("      " + locationPair.Key + " - ");
+                    Console.WriteLine(" - " + kvp.Key + " - Responsible for:");
+                    foreach (KeyValuePair<int, int> locationPair in padIntsLocation)
+                    {
+                        if (locationPair.Value == kvp.Key)
+                            Console.Write("      " + locationPair.Key + " - ");
+                    }
+                    Console.WriteLine();
                 }
-                Console.WriteLine();
             }
 
         }
@@ -291,15 +316,27 @@ namespace Master
                         }
                         else
                         {
-                            //check if it's "kvp.Key" is dead 
-                            Console.WriteLine("Oi? Morreu?");
+                            //check if it's "kvp.Key" is dead
+                            removeFromActives(kvp.Value);
+                            Console.WriteLine("Removed from Actives "+ kvp.Key);
                         }
                         Console.WriteLine("sai");
                          
                     }
                 }
-                System.Threading.Thread.Sleep(1500);
+                System.Threading.Thread.Sleep(2000);
             }
+        }
+        private bool removeFromActives(int slaveId) {
+            lock (slaves)
+            {
+                slaves[slaveId] = -1;
+            }
+            lock (slavesMonitor) { 
+            
+            
+            }
+            return false;
         }
 
         

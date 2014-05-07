@@ -75,6 +75,10 @@ namespace Master
             Console.WriteLine("slave.CommitTransaction(t) SERVICES");
             return slave.CommitTransaction(t);
         }
+        public int getSlaveId()
+        {
+            return slave.getSlaveId();
+        }
 
     }
     public class MasterServices : MarshalByRefObject, IMasterService

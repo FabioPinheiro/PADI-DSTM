@@ -28,18 +28,33 @@ namespace PADI_DSTM
             else
             {
                 port = master.getSlave();
-                return true;
+                if (port != 0)
+                    return true;
+                else {
+                    return false;
+                }
 
             }
         }
         public static bool TxBegin()
         { //Liga-se ao slave e começa uma transacçºao. falta começar uma transacção.
+            if (port == 0) {
+                Console.WriteLine("No Slaves Found");
+                throw new TxException("No Slaves Found");
+               
+            }
             TcpChannel channel = new TcpChannel();
             slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + port + "/MyRemoteObjectName");
-            tx = new Transaction();
             if (slave == null)
-                return false;
-            else return true;
+            {
+                Console.WriteLine("Slave not Found");
+                throw new TxException("Slave not Found"); //fix me
+            }
+            else
+            {
+                tx = new Transaction();
+                return true;
+            }
         }
 
         public static bool TxCommit()
@@ -125,6 +140,7 @@ namespace PADI_DSTM
         bool unlockPadInt(int uid, String lockby);
         bool lockPadInt(int uid, String lockby);
         bool CommitTransaction(Transaction Trtnsaction);
+        int getSlaveId();
     }
 
     [Serializable] // passar por referencia; já não nessecario

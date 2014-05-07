@@ -55,14 +55,17 @@ namespace Master
 
         public void monitor()
         {
+            while (true)
+            { //quando fizer freeze isto "morre"
+                while (currentStatus == LIVE)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    Console.WriteLine("olá");
+                    master.ping(port);
+                }
+                System.Threading.Thread.Sleep(500); //menos tempo para rever se o status nao mudou, pode morrer
 
-            while (currentStatus == LIVE )
-            {
-                System.Threading.Thread.Sleep(1000);
-                Console.WriteLine("olá");
-                master.ping(port);
             }
-
         }
 
         //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -416,6 +419,9 @@ namespace Master
             }
                 return null;
             }
+        public int getSlaveId(){
+            return port;
+        }
 
      
 
