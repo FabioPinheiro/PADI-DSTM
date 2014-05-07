@@ -59,20 +59,28 @@ namespace Master
         }
         public int getSlave()
         {
+            Console.WriteLine("get slave");
             lock (slaves)
             {
                 //System.Console.WriteLine(numberOfSlaves + " " + roundRobin + " resultado " + roundRobin % numberOfSlaves);
+                if (numberOfSlaves == 0)
+                    return 0;
+                Console.WriteLine("Entrou no lock");
                 int aux = slaves[8087 + (roundRobin++ % numberOfSlaves)];
                 int i= 0;
                 while (i < numberOfSlaves) {
-                    if (slaves[aux] != -1) //check if it's alive :D
+                    Console.WriteLine("Ciclo  valor i: " + i +" aux value: " + aux+ "  aux e I: " + aux+i);
+                    if (aux != -1) //check if it's alive :D
                     {
+                        Console.WriteLine("o slave é: " + aux);
                         return aux;
                     }
-                    else { 
-                        aux++;
+                    else {
+                        roundRobin++;
+                        i++;
                     }
                 }
+                Console.WriteLine("No slaves found");
                 return 0; //no slaves found
             }
         }
@@ -317,7 +325,7 @@ namespace Master
                         else
                         {
                             //check if it's "kvp.Key" is dead
-                            removeFromActives(kvp.Value);
+                            removeFromActives(kvp.Key);
                             Console.WriteLine("Removed from Actives "+ kvp.Key);
                         }
                         Console.WriteLine("sai");
@@ -332,8 +340,9 @@ namespace Master
             {
                 slaves[slaveId] = -1;
             }
-            lock (slavesMonitor) { 
-            
+            lock (slavesMonitor) {
+                //Console.WriteLine("removendo o" + slaveId);
+                slavesMonitor.Remove(slaveId);
             
             }
             return false;

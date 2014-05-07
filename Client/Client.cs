@@ -27,7 +27,8 @@ namespace Client
             Console.ReadLine();
             bool res;
 
-            PadiDstm.Init();
+            res = PadiDstm.Init();
+            Console.WriteLine("O Init foi " + res);
             Console.WriteLine("PadiDstm.Init();");
             res = PadiDstm.TxBegin();
             Console.WriteLine("res = PadiDstm.TxBegin();");

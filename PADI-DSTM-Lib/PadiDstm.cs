@@ -31,6 +31,7 @@ namespace PADI_DSTM
                 if (port != 0)
                     return true;
                 else {
+                    Console.WriteLine("nao ha port");
                     return false;
                 }
 
