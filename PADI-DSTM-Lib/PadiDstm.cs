@@ -124,7 +124,7 @@ namespace PADI_DSTM
         bool fail(String url);
         bool status();
         bool ping(int slaveId);
-
+        int whereIsMyReplica(int slaveId);
     }
     public interface ISlaveService
     {
@@ -142,6 +142,8 @@ namespace PADI_DSTM
         bool lockPadInt(int uid, String lockby);
         bool CommitTransaction(Transaction Trtnsaction);
         int getSlaveId();
+        void slaveIsDead(int slaveId);
+        void reorganizeGrid();
     }
 
     [Serializable] // passar por referencia; já não nessecario

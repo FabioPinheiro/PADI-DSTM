@@ -79,6 +79,13 @@ namespace Master
         {
             return slave.getSlaveId();
         }
+        public void slaveIsDead(int slaveId) {
+            slave.slaveIsDead(slaveId);
+        }
+        public void reorganizeGrid() {
+            slave.reorganizeGrid();
+        }
+
 
     }
     public class MasterServices : MarshalByRefObject, IMasterService
@@ -146,6 +153,10 @@ namespace Master
         }
         public bool ping(int slaveId) {
             return master.ping(slaveId);
+        }
+
+        public int whereIsMyReplica(int slaveId){
+            return master.whereIsMyReplica(slaveId);
         }
 
     }

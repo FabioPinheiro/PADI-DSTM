@@ -39,8 +39,8 @@ namespace Master
         //$$$$$$$$ COORDENADOR
         List<TransactionWrapper> transacções_state = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
-       
 
+        private History history;
         //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         //Substituir por uma lista de history.
 
@@ -78,6 +78,7 @@ namespace Master
             //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
             counter = new Counter();
             cs = new SlaveServices(this);
+            history = new History(master.whereIsMyReplica(port));
         }
         public void registSlave()
         {
@@ -423,8 +424,34 @@ namespace Master
             return port;
         }
 
-     
 
+
+
+        public void slaveIsDead(int slaveId)
+        {
+            if (slaveId == history.getId())
+            {
+                int replicaId = master.whereIsMyReplica(port);
+                changeReplica(replicaId);
+
+            }
+            else { 
+            
+            }
+        }
+
+        public void reorganizeGrid() {
+
+            int replicaId = master.whereIsMyReplica(port);
+            changeReplica(replicaId);
+            
+        }
+
+        private void changeReplica(int replicaId) {
+            //FIXME DO STUFF
+
+        
+        }
     }
 
     public class Counter {
@@ -447,7 +474,9 @@ namespace Master
         SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
         //$$$$$$$$ COORDENADOR
         List<TransactionWrapper> transacções_state_Replication = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
-
+        public int getId() {
+            return slaveId;
+        }
         public History(int port) {
              slaveId = port;
         }

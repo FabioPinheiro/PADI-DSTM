@@ -363,6 +363,66 @@ namespace Master
             
         }
 
+        public void slaveIsDead(int slaveId) {
+            lock (slaves)
+            {
+                //envia a info para todos: Melhorar se houver tempo
+                foreach (KeyValuePair<int, int> kvp in slaves)
+                {
+                    Console.WriteLine("Informa a " + kvp.Key + " que este " + slaveId+" está morto");
+                    ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
+                    slave.slaveIsDead(slaveId);
+                }
+            }
+        }
+
+
+        //usado para criar a grid e para actualizar a grid.
+        //Devolve o Id do slave que replica o slaveId
+        public int whereIsMyReplica(int slaveId) {
+            int replicId = 0;
+            lock (slaves)
+            {
+                bool foundme = false;
+                Console.WriteLine("procura a replica para " + slaveId);
+                foreach (KeyValuePair<int, int> kvp in slaves)
+                {
+                    if (kvp.Key == slaveId)
+                    {
+                        foundme = true;
+                        continue;
+                    }
+                    if (foundme)
+                    {
+                        if (kvp.Value == 1)
+                        { //is alive
+                            Console.WriteLine("A replica é o " + kvp.Key);
+
+                            return kvp.Key;
+                        }
+                    }
+                }
+                //segunda ronda, ja me encontrei (da a volta)
+                //CHECK master serve de replica? se SIM apagar este foreach e devolver o master!
+                //Se não este foreach é necessario
+                foreach (KeyValuePair<int, int> kvp in slaves)
+                {
+                    if (kvp.Value == 1)
+                    { //is alive
+                        Console.WriteLine("A replica é o " + kvp.Key);
+
+                        return kvp.Key;
+                    }
+                }
+                //NAO ENCONTREI NENHUM PANIC
+                replicId = port;
+
+            }
+            Console.WriteLine("A replica é o Master");
+            return replicId;
+        
+        }
+
         
 
 
