@@ -145,7 +145,7 @@ namespace PADI_DSTM
         int getSlaveId();
         void slaveIsDead(int slaveId);
         void reorganizeGrid();
-        void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state);
+        void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state, int newSlaveId);
     }
 
     [Serializable] // passar por referencia; já não nessecario

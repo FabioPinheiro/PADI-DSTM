@@ -85,8 +85,9 @@ namespace Master
         public void reorganizeGrid() {
             slave.reorganizeGrid();
         }
-        public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state) { 
-            slave.modifyHistory(myResponsability,transacções_state);
+        public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state, int newSlaveId)
+        { 
+            slave.modifyHistory(myResponsability,transacções_state, newSlaveId);
         }
 
 

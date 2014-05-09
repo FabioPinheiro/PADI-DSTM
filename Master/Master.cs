@@ -375,16 +375,19 @@ namespace Master
         }
 
         public void slaveIsDead(int slaveId) {
-            lock (slaves)
-            {
+
                 //envia a info para todos: Melhorar se houver tempo
-                foreach (KeyValuePair<int, int> kvp in slaves)
-                {
-                    Console.WriteLine("Informa a " + kvp.Key + " que este " + slaveId+" está morto");
-                    ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
-                    slave.slaveIsDead(slaveId);
-                }
-            }
+            int replication = whereIsMyReplica(slaveId);
+            int hasreplic = whichReplicaDoIHave(slaveId);
+            Console.WriteLine("Informa a " + replication + " que este " + slaveId + " está morto Para por como Activo");
+            ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + replication + "/MyRemoteObjectName");
+            slave.slaveIsDead(slaveId);
+            Console.WriteLine("Informa a " + hasreplic + " que este " + slaveId + " está morto Para replicar noutro sitio");
+            slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + hasreplic + "/MyRemoteObjectName");
+            slave.slaveIsDead(slaveId);
+
+
+
         }
 
 

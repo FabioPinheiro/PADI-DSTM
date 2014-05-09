@@ -436,10 +436,11 @@ namespace Master
             if (slaveId == history.getId())
             {
                 //Add to data
+                movePassiveToPrimary();
 
-               //replicate somewhere
                 myReplication = master.whichReplicaDoIHave(port);
                 //add to where is replicated
+
 
             }
             //my replica died, change that :D
@@ -450,6 +451,17 @@ namespace Master
             
             }
         }
+        private void movePassiveToPrimary() {
+
+            //move the history to primary!!
+            updatePassive(myReplication);
+        
+        }
+        private void updatePassive(int myReplication) { 
+        //send the new information to the passive of this server.
+        
+        }
+
 
         public void reorganizeGrid() {
             int replicaId = master.whereIsMyReplica(port);
@@ -462,7 +474,7 @@ namespace Master
             //FIXME DO STUFF
             Console.WriteLine("muda o sitio onde esta replicado o server: " + replicaId);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + replicaId + "/MyRemoteObjectName");
-            slave.modifyHistory(myResponsability, transacções_state);
+            slave.modifyHistory(myResponsability, transacções_state, port);
         
         }
         //merge the data with the data of the replication.
@@ -470,9 +482,9 @@ namespace Master
         //todo
         }
 
-        public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state)
+        public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state, int newSlaveId)
         {
-            history.changeReplic(myResponsability, transacções_state);
+            history.changeReplic(myResponsability, transacções_state, newSlaveId);
         }
     }
 
@@ -502,10 +514,11 @@ namespace Master
         public History(int port) {
              slaveId = port;
         }
-        public void changeReplic(SortedList<int, SortedList<int, PadIntStored>> myNewReplication, List<TransactionWrapper> transacções_state_Replication_new)
+        public void changeReplic(SortedList<int, SortedList<int, PadIntStored>> myNewReplication, List<TransactionWrapper> transacções_state_Replication_new, int slaveIdnew)
         {
             myReplication = myNewReplication;
             transacções_state_Replication = transacções_state_Replication_new;
+            slaveId = slaveIdnew;
         }
 
         public void compare(SortedList<int, SortedList<int, PadIntStored>> l1, SortedList<int, SortedList<int, PadIntStored>> l2) {
