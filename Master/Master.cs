@@ -46,6 +46,7 @@ namespace Master
         }
         public int registSlave()
         {
+            int serverBefore = port - 1;
             lock (slaves)
             {
                 numberOfSlaves++;
@@ -54,8 +55,18 @@ namespace Master
                 {
                     slavesMonitor.Add(port, 1);
                 }
-                return port++;
+
             }
+
+            if (numberOfSlaves > 1)
+            {
+                Console.WriteLine("muda o sitio onde esta replicado o server: " + serverBefore);
+                ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + serverBefore + "/MyRemoteObjectName");
+                slave.reorganizeGrid();
+            }
+
+            
+            return port++;
         }
         public int getSlave()
         {
@@ -401,10 +412,11 @@ namespace Master
                             return kvp.Key;
                         }
                     }
+
+                    
                 }
                 //segunda ronda, ja me encontrei (da a volta)
-                //CHECK master serve de replica? se SIM apagar este foreach e devolver o master!
-                //Se não este foreach é necessario
+                //procura a replica da outra ponta da lista (do inicio)
                 foreach (KeyValuePair<int, int> kvp in slaves)
                 {
                     if (kvp.Value == 1)
@@ -415,13 +427,51 @@ namespace Master
                     }
                 }
                 //NAO ENCONTREI NENHUM PANIC
-                replicId = port;
+                replicId = slaveId;
 
             }
             Console.WriteLine("A replica é o Master");
             return replicId;
         
         }
+
+        public int whichReplicaDoIHave(int slaveId) {
+            int replicId = 0;
+
+            bool found = false;
+            lock (slaves)
+            {
+                Console.WriteLine("procura quem é replica que " + slaveId + " tem.");   
+                foreach (KeyValuePair<int, int> kvp in slaves)
+                {
+                    if (kvp.Value == 1)
+                    { //is alive
+                        Console.WriteLine("A replica que tem é o " + kvp.Key);
+                        found = true;
+                        replicId = kvp.Key;
+                    }
+
+                    if (kvp.Key == slaveId)
+                    {
+                        if (found)
+                            return replicId;
+                        else {
+                            //a replica vai ser a ultima.
+                            continue;
+                        }
+                    } 
+                }
+
+            }
+            if (found)
+                return replicId;
+            //NAO ENCONTREI NENHUM PANIC
+            replicId = slaveId;
+            Console.WriteLine("A replica é o Master");
+            return replicId;
+        
+        }        
+    
 
         
 

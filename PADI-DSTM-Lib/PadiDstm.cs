@@ -125,6 +125,7 @@ namespace PADI_DSTM
         bool status();
         bool ping(int slaveId);
         int whereIsMyReplica(int slaveId);
+        int whichReplicaDoIHave(int slaveId);
     }
     public interface ISlaveService
     {
@@ -144,6 +145,7 @@ namespace PADI_DSTM
         int getSlaveId();
         void slaveIsDead(int slaveId);
         void reorganizeGrid();
+        void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state);
     }
 
     [Serializable] // passar por referencia; já não nessecario
@@ -413,6 +415,8 @@ namespace PADI_DSTM
 
     }
 
+
+    [Serializable]
     public class TransactionWrapper
     {
         enum State { possibleToAbort=1, impossibleToAbort=2, Abort=3 };

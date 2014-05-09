@@ -31,6 +31,7 @@ namespace Master
         IMasterService master;
         IDictionary propBag;
         private int port;
+        private int myReplication;//where this Slave is replicated
         private Counter counter;//adicionar a Version da transacçao.
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key is the hash, value is the port of the slave that is responsable for that hash
@@ -44,9 +45,9 @@ namespace Master
         //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         //Substituir por uma lista de history.
 
-        SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
+        //SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
         //$$$$$$$$ COORDENADOR
-        List<TransactionWrapper> transacções_state_Replication = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
+        //List<TransactionWrapper> transacções_state_Replication = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
 
         public bool moveReplic(int slaveId) {
 
@@ -60,7 +61,7 @@ namespace Master
                 while (currentStatus == LIVE)
                 {
                     System.Threading.Thread.Sleep(1000);
-                    Console.WriteLine("olá");
+                    //Console.WriteLine("olá");
                     master.ping(port);
                 }
                 System.Threading.Thread.Sleep(500); //menos tempo para rever se o status nao mudou, pode morrer
@@ -78,7 +79,7 @@ namespace Master
             //if you want to ignore names, but avoid naming collisions."  CHECK IF WE NEED TO CARE ABOUT THE NAME
             counter = new Counter();
             cs = new SlaveServices(this);
-            history = new History(master.whereIsMyReplica(port));
+            
         }
         public void registSlave()
         {
@@ -94,6 +95,8 @@ namespace Master
                 createChannel(port);
 
             }
+            myReplication = master.whereIsMyReplica(port);
+            history = new History(master.whichReplicaDoIHave(port));
             currentStatus = LIVE;
         }
         private String getStatus()
@@ -429,28 +432,47 @@ namespace Master
 
         public void slaveIsDead(int slaveId)
         {
+            //I have the replica of the dead server. Must add to my data and replicate somewhere
             if (slaveId == history.getId())
+            {
+                //Add to data
+
+               //replicate somewhere
+                myReplication = master.whichReplicaDoIHave(port);
+                //add to where is replicated
+
+            }
+            //my replica died, change that :D
+            if (slaveId == myReplication)
             {
                 int replicaId = master.whereIsMyReplica(port);
                 changeReplica(replicaId);
-
-            }
-            else { 
             
             }
         }
 
         public void reorganizeGrid() {
-
             int replicaId = master.whereIsMyReplica(port);
             changeReplica(replicaId);
-            
         }
+       
 
+        //change the replica because the replica died OR a new server was added.
         private void changeReplica(int replicaId) {
             //FIXME DO STUFF
-
+            Console.WriteLine("muda o sitio onde esta replicado o server: " + replicaId);
+            ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + replicaId + "/MyRemoteObjectName");
+            slave.modifyHistory(myResponsability, transacções_state);
         
+        }
+        //merge the data with the data of the replication.
+        private void mergePassive() { 
+        //todo
+        }
+
+        public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state)
+        {
+            history.changeReplic(myResponsability, transacções_state);
         }
     }
 
@@ -479,6 +501,11 @@ namespace Master
         }
         public History(int port) {
              slaveId = port;
+        }
+        public void changeReplic(SortedList<int, SortedList<int, PadIntStored>> myNewReplication, List<TransactionWrapper> transacções_state_Replication_new)
+        {
+            myReplication = myNewReplication;
+            transacções_state_Replication = transacções_state_Replication_new;
         }
 
         public void compare(SortedList<int, SortedList<int, PadIntStored>> l1, SortedList<int, SortedList<int, PadIntStored>> l2) {

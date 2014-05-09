@@ -85,6 +85,9 @@ namespace Master
         public void reorganizeGrid() {
             slave.reorganizeGrid();
         }
+        public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state) { 
+            slave.modifyHistory(myResponsability,transacções_state);
+        }
 
 
     }
@@ -158,6 +161,10 @@ namespace Master
         public int whereIsMyReplica(int slaveId){
             return master.whereIsMyReplica(slaveId);
         }
+        public int whichReplicaDoIHave(int slaveId){
+            return master.whichReplicaDoIHave(slaveId);
+        }
+
 
     }
 }
