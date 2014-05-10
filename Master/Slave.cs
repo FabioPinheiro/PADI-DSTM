@@ -36,24 +36,12 @@ namespace Master
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key is the hash, value is the port of the slave that is responsable for that hash
         SortedList<int, SortedList<int, PadIntStored>> myResponsability = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
-
         //$$$$$$$$ COORDENADOR
         List<TransactionWrapper> transacções_state = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
 
+        //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%
         private History history;
-        //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        //Substituir por uma lista de history.
-
-        //SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
-        //$$$$$$$$ COORDENADOR
-        //List<TransactionWrapper> transacções_state_Replication = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
-
-        public bool moveReplic(int slaveId) {
-
-            return true;
-        }
-
         public void monitor()
         {
             while (true)
@@ -69,7 +57,7 @@ namespace Master
             }
         }
 
-        //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%
         public Slave()
         {
             channelToOut = new TcpChannel();
@@ -149,7 +137,7 @@ namespace Master
         {
             while (currentStatus == FROZEN)
             {
-                System.Threading.Thread.Sleep(3000);
+                System.Threading.Thread.Sleep(100);
             }
         }
         public bool fail()
@@ -159,7 +147,7 @@ namespace Master
         }
         public int getSlave()
         {
-            return master.getSlave();//FIXME
+            return master.getSlave();
         }
         public void createChannel(int port)
         {
@@ -338,8 +326,6 @@ namespace Master
             //Get the result
             return willAbort; //return false if not.
         }
-
-
         public String accessPadiIntVersion(int uid) {
             PadIntStored  padint = accessPadInt(uid);
             if (padint != null) {
@@ -380,7 +366,6 @@ namespace Master
             PadIntStored aux = slave.accessPadInt(uid);
             return aux;
         }
-
         public bool setResponsability(int port, int hash)
         {
             if (padIntsLocation.ContainsKey(hash))
@@ -393,19 +378,16 @@ namespace Master
                 return true;
             }
         }
-
         private int hashUid(int uid)
         {
             return uid % MYPRIME;
         }
-
-
         //###########################################################
         public bool CommitTransaction(Transaction t){
             TransactionWrapper newTx = new PADI_DSTM.TransactionWrapper(cs, t, this.port, counter.update());
             transacções_state.Add(newTx);
             Console.WriteLine("CommitTransaction no SLAVE!");
-            bool aux= newTx.CommitTransaction(); //FIXME!!
+            bool aux= newTx.CommitTransaction(); 
             abortou += newTx.abortou;
             return aux;
         }
@@ -429,7 +411,7 @@ namespace Master
 
 
 
-
+        //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%
         public void slaveIsDead(int slaveId)
         {
             //I have the replica of the dead server. Must add to my data and replicate somewhere
@@ -459,10 +441,7 @@ namespace Master
                 myResponsability.Add(kvp.Key,kvp.Value);
             }
             //move the transactions!!
-
-
-            updatePassive(myReplication, aux);
-        
+            updatePassive(myReplication, aux); 
         }
         private void updatePassive(int myReplication,SortedList<int, SortedList<int, PadIntStored>> auxPadInts ) { 
         //send the new information to the passive of this server.
@@ -473,14 +452,10 @@ namespace Master
             
 
         }
-
-
         public void reorganizeGrid() {
             int replicaId = master.whereIsMyReplica(port);
             changeReplica(replicaId);
         }
-       
-
         //change the replica because the replica died OR a new server was added.
         private void changeReplica(int replicaId) {
             Console.WriteLine("muda o sitio onde esta replicado o server: " + replicaId);
@@ -493,12 +468,10 @@ namespace Master
         {
             history.addToReplic(rep);
         }
-
         public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state, int newSlaveId)
         {
             history.changeReplic(myResponsability, transacções_state, newSlaveId);
         }
-
     }
 
     public class Counter {
@@ -515,7 +488,6 @@ namespace Master
             return counter++;
         } 
     }
-
     public class History {
         int slaveId; //o slave que está a replicar
         SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master

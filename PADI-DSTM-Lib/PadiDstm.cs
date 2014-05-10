@@ -420,7 +420,7 @@ namespace PADI_DSTM
     [Serializable]
     public class TransactionWrapper
     {
-        enum State { possibleToAbort=1, impossibleToAbort=2, Abort=3 };
+        enum State { possibleToAbort=1, impossibleToAbort=2, Abort=3, Commited = 4 };
         private String timeStramp;
         private ISlaveService slave;
         private State state;
@@ -525,7 +525,7 @@ namespace PADI_DSTM
                         }
                         else
                         {
-                            changeState(State.impossibleToAbort); //FIXME não é atomico parte2; é facil de resolver mas tb é preciso de ter azar!!
+                            changeState(State.impossibleToAbort); 
                             foreach (KeyValuePair<int, PadInt> pair in this.transaction.getPoolPadInt())
                             {
                                 if (!pair.Value.commitVaule(getTransactionWrapperID(), slave))
@@ -534,6 +534,7 @@ namespace PADI_DSTM
                                     throw new TxException("TxCommitAUX->commitVaule Fail (possivel inconcistencia)");
                                 }
                             }
+                            changeState(State.Commited);
                         }
                     }
 
@@ -651,7 +652,7 @@ namespace PADI_DSTM
            
             lock (lockState)
             {
-                if (status == State.impossibleToAbort && state == State.Abort)
+                if (status == State.impossibleToAbort && state == State.Abort && state == State.Commited)
                     throw new TxException("ChangeState, ImpossibleToAbort when it was to Abort");
                 state=status;
             }
