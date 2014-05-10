@@ -9,6 +9,7 @@ using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
 using PADI_DSTM;
 using System.Collections;
+using System.Runtime.Serialization.Formatters;
 
 namespace Master
 {
@@ -151,8 +152,10 @@ namespace Master
         }
         public void createChannel(int port)
         {
+            BinaryServerFormatterSinkProvider provider = new BinaryServerFormatterSinkProvider();
+            provider.TypeFilterLevel = TypeFilterLevel.Full;
             propBag["port"] = port;
-            channelListening = new TcpChannel(propBag, null, null);
+            channelListening = new TcpChannel(propBag, null, provider);
             ChannelServices.RegisterChannel(channelListening, false);
             RemotingServices.Marshal(cs, "MyRemoteObjectName", typeof(SlaveServices));
         }
@@ -499,6 +502,8 @@ namespace Master
         
         public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state, int newSlaveId)
         {
+
+            Console.WriteLine("MODIFIQUEI A REPLICA");
             history.changeReplic(myResponsability, transacções_state, newSlaveId);
         }
 
@@ -549,6 +554,8 @@ namespace Master
         }
         public void changeReplic(SortedList<int, SortedList<int, PadIntStored>> myNewReplication, List<TransactionWrapper> transacções_state_Replication_new, int slaveIdnew)
         {
+
+            Console.WriteLine("I am the new replic of " + slaveId );
             myReplication = myNewReplication;
             transacções_state_Replication = transacções_state_Replication_new;
             slaveId = slaveIdnew;

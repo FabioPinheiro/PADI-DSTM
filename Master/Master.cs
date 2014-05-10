@@ -431,7 +431,7 @@ namespace Master
                 replicId = slaveId;
 
             }
-            Console.WriteLine("A replica é o Master");
+            Console.WriteLine("A replica é o Proprio");
             return replicId;
         
         }
