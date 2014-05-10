@@ -146,7 +146,7 @@ namespace PADI_DSTM
         void slaveIsDead(int slaveId);
         void reorganizeGrid();
         void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state, int newSlaveId);
-        void mergePassive(SortedList<int, SortedList<int, PadIntStored>> auxPadInts);
+        void mergePassive(SortedList<int, SortedList<int, PadIntStored>> auxPadInts, List<TransactionWrapper> finish_transactions);
     }
 
     [Serializable] // passar por referencia; já não nessecario
@@ -494,7 +494,6 @@ namespace PADI_DSTM
             }
             return true;
         }
-
         private bool TxCommitAUX()//FIXME muitos problemas de consistencia
         {
             Console.WriteLine("TxCommitAUX()");
@@ -545,7 +544,6 @@ namespace PADI_DSTM
             Console.WriteLine("DONE-TxCommitAUX()");
             return true;
         }
-
         public bool CommitTransaction()
         {
             //Task taskA = new Task(() => TxCommitAUX());
@@ -559,8 +557,6 @@ namespace PADI_DSTM
             return taskArray[0].Result;
             //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
         }
-
-
         private static string timeFromId(String ts)
         {
             String[] words = ts.Split(':');
@@ -646,8 +642,6 @@ namespace PADI_DSTM
             else return false;
 
         }
-
-
         private void changeState(State status) {
            
             lock (lockState)
@@ -657,7 +651,6 @@ namespace PADI_DSTM
                 state=status;
             }
         }
-
         private State readState() {
 
             State aux;
@@ -667,6 +660,10 @@ namespace PADI_DSTM
             }
 
             return aux;
+        }
+
+        public bool isImpossibleToAbort(TransactionWrapper t) {
+            return t.state == State.impossibleToAbort;
         }
 
 

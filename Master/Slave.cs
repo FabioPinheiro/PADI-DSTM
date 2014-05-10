@@ -435,20 +435,28 @@ namespace Master
         }
         private void movePassiveToPrimary() {
             SortedList<int, SortedList<int, PadIntStored>> aux = history.moveToPrimary();
-
+            List<TransactionWrapper> aux_transactions = history.moveCoordinator();
+            List<TransactionWrapper> finish_transactions = new List<TransactionWrapper>();
             //move the history to primary!!
             foreach(KeyValuePair<int, SortedList<int, PadIntStored>> kvp in aux){
                 myResponsability.Add(kvp.Key,kvp.Value);
             }
-            //move the transactions!!
-            updatePassive(myReplication, aux); 
+            foreach (TransactionWrapper transaction in aux_transactions) {
+                //check if this works!!
+                if (transaction.isImpossibleToAbort(transaction)) {
+                    finish_transactions.Add(transaction);
+                }
+            }
+            //call Function to finish the transactions!!
+            updatePassive(myReplication, aux, finish_transactions); 
         }
-        private void updatePassive(int myReplication,SortedList<int, SortedList<int, PadIntStored>> auxPadInts ) { 
+        private void updatePassive(int myReplication, SortedList<int, SortedList<int, PadIntStored>> auxPadInts, List<TransactionWrapper> finish_transactions)
+        { 
         //send the new information to the passive of this server.
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + myReplication + "/MyRemoteObjectName");
             //call the slave
             //send the info! using this addToReplic
-            slave.mergePassive(auxPadInts);
+            slave.mergePassive(auxPadInts, finish_transactions);
             
 
         }
@@ -464,9 +472,9 @@ namespace Master
         
         }
         //merge the data with the data of the replication.
-        public void mergePassive(SortedList<int, SortedList<int, PadIntStored>> rep)
+        public void mergePassive(SortedList<int, SortedList<int, PadIntStored>> rep, List<TransactionWrapper> finish_transactions)
         {
-            history.addToReplic(rep);
+            history.addToReplic(rep, finish_transactions);
         }
         public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state, int newSlaveId)
         {
@@ -512,8 +520,6 @@ namespace Master
         public void compare(List<TransactionWrapper> l1, List<TransactionWrapper> l2) { 
         
         }
-
-
         //Recupera um servidor
         public void restore() { }
 
@@ -521,10 +527,14 @@ namespace Master
         public void reCreate() { }
 
         //Recebe uma lista e adiciona a replicação
-        public void addToReplic(SortedList<int, SortedList<int, PadIntStored>> rep) {
+        public void addToReplic(SortedList<int, SortedList<int, PadIntStored>> rep, List<TransactionWrapper> finish_transactions)
+        {
             foreach (KeyValuePair<int, SortedList<int, PadIntStored>> kvp in rep)
             {
                 myReplication.Add(kvp.Key, kvp.Value);
+            }
+            foreach (TransactionWrapper t in finish_transactions) { 
+                //DO Stuff
             }
         }
         //adiciona uma parte da hash a replicação
@@ -536,7 +546,9 @@ namespace Master
             return myReplication;
         }
 
-
-    
+        public List<TransactionWrapper> moveCoordinator()
+        {
+            return transacções_state_Replication;
+        }
     }
 }

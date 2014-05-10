@@ -89,8 +89,9 @@ namespace Master
         { 
             slave.modifyHistory(myResponsability,transacções_state, newSlaveId);
         }
-        public void mergePassive(SortedList<int, SortedList<int, PadIntStored>> auxPadInts) {
-            slave.mergePassive(auxPadInts);
+        public void mergePassive(SortedList<int, SortedList<int, PadIntStored>> auxPadInts, List<TransactionWrapper> finish_transactions)
+        {
+            slave.mergePassive(auxPadInts, finish_transactions);
         }
 
 
