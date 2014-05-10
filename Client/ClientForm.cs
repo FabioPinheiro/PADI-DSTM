@@ -18,7 +18,6 @@ namespace Client
 {
     public partial class ClientForm : Form
     {
-        private int port= 0;
         public ClientForm()
         {
             InitializeComponent();

@@ -26,9 +26,7 @@ namespace Master
         static int currentStatus;
 
         TcpChannel channel = new TcpChannel(8086);
-        TcpChannel channelOut;
         MasterServices ms;
-        IDictionary propBag;
         SortedList<int, int> slaves = new SortedList<int, int>(); //key port, value Live(1) or Dead(-1); o port identifica o slave.
         //SortedList<int, int> slavesMonitor = new SortedList<int, int>(); //key port, value 1 or 0. 1 had received the ping, 0 haven't received the ping
         Dictionary<int, int> slavesMonitor = new Dictionary<int, int>();

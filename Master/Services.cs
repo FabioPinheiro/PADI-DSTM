@@ -94,6 +94,10 @@ namespace Master
             slave.mergePassive(auxPadInts, finish_transactions);
         }
 
+        public bool createInReplica(PadIntStored padInt, int hash, bool newhash) {
+            return slave.createInReplica(padInt, hash, newhash);
+        }
+
 
     }
     public class MasterServices : MarshalByRefObject, IMasterService

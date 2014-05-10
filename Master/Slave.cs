@@ -165,7 +165,7 @@ namespace Master
             PadIntStored aux = null;
             int location = whereIsPadInt(uid);
             //System.Console.WriteLine("begin location " + location + " uid  " + uid + " port: " + port);
-
+            ISlaveService slave;
             if (location == MINE)
             {
                 if (myResponsability[hashUid(uid)].ContainsKey(uid))
@@ -176,6 +176,13 @@ namespace Master
                 aux.setVersion(DateTime.Now.ToString("s") + ":" + port + ":" + counter.update());
 
                 myResponsability[hashUid(uid)].Add(uid, aux);
+                slave = connectToReplic();
+                if (slave.createInReplica(aux, location, false))
+                    return aux;
+                else {
+
+                    //throw new TxException();
+                }
                 return aux;
             }
             else
@@ -192,6 +199,14 @@ namespace Master
                     aux = new PadIntStored(uid);
                     aux.setVersion( DateTime.Now.ToString("s") + ":" + port + ":" + counter.update());
                     myResponsability[location].Add(uid, aux);
+                    slave = connectToReplic();
+                    if (slave.createInReplica(aux, location, true))
+                        return aux;
+                    else
+                    {
+
+                       // throw new TxException();
+                    }
                     return aux;
                 }
                 else
@@ -412,6 +427,11 @@ namespace Master
 
 
         //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%
+        private ISlaveService connectToReplic()
+        {
+            ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + myReplication + "/MyRemoteObjectName");
+            return slave;
+        }
         public void slaveIsDead(int slaveId)
         {
             //I have the replica of the dead server. Must add to my data and replicate somewhere
@@ -476,10 +496,30 @@ namespace Master
         {
             history.addToReplic(rep, finish_transactions);
         }
+        
         public void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state, int newSlaveId)
         {
             history.changeReplic(myResponsability, transacções_state, newSlaveId);
         }
+
+
+
+        public bool createInReplica(PadIntStored padInt, int hash, bool newhash)
+        {
+            Console.WriteLine("Vai criar na Replica weeee");
+            history.createInReplic(hash, padInt, newhash);
+            return true;
+        }
+
+
+        public bool commitInReplica() {
+            return true;
+        }
+        public bool lockInReplica() {
+            return true;
+        }
+
+
     }
 
     public class Counter {
@@ -541,6 +581,15 @@ namespace Master
         public void addToReplic(int hasnumber, SortedList<int, PadIntStored> list)
         {
 
+        }
+        public void createInReplic(int hasnumber, PadIntStored padInt, bool newHash) {
+            if (newHash)
+            {
+                myReplication.Add(hasnumber,new SortedList<int, PadIntStored>());
+                //cria a lista na hash :D
+            }
+            myReplication[hasnumber].Add(padInt.getID(), padInt);
+            //adiciona o PadInt
         }
         public SortedList<int, SortedList<int, PadIntStored>> moveToPrimary() {
             return myReplication;
