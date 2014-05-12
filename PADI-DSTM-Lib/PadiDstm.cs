@@ -14,9 +14,10 @@ namespace PADI_DSTM
     public class PadiDstm
     {
         private static int port = 0;
-        private static int replic = 0; //add
+        private static int replic = 0;
         private static IMasterService master;
         private static ISlaveService slave; // some slave
+        private static ISlaveService slave_replic;
         private static Transaction tx;
         public static bool Init()
         { //so é feito uma vez aka por o Master up
@@ -47,6 +48,8 @@ namespace PADI_DSTM
             }
             TcpChannel channel = new TcpChannel();
             slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + port + "/MyRemoteObjectName");
+            replic = slave.getReplic();
+            slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + replic + "/MyRemoteObjectName");
             if (slave == null)
             {
                 Console.WriteLine("Slave not Found");
@@ -144,6 +147,7 @@ namespace PADI_DSTM
         bool lockPadInt(int uid, String lockby);
         bool CommitTransaction(Transaction Trtnsaction);
         int getSlaveId();
+        int getReplic();
         void slaveIsDead(int slaveId);
         void reorganizeGrid();
         void modifyHistory(SortedList<int, SortedList<int, PadIntStored>> myResponsability, List<TransactionWrapper> transacções_state, int newSlaveId);
@@ -678,6 +682,10 @@ namespace PADI_DSTM
 
         public bool isImpossibleToAbort(TransactionWrapper t) {
             return t.state == State.impossibleToAbort;
+        }
+        public bool isPossibleToAbort(TransactionWrapper t)
+        {
+            return t.state == State.possibleToAbort;
         }
 
 

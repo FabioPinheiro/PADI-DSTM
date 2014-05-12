@@ -451,6 +451,9 @@ namespace Master
 
 
         //%%%%%%%%%%%% REPLICAÇÃO %%%%%%%%%%%%%%%%
+        public int getReplic() {
+            return myReplication;
+        }
         private ISlaveService connectToReplic()
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + myReplication + "/MyRemoteObjectName");
@@ -675,6 +678,34 @@ namespace Master
             return transacções_state_Replication;
         }
 
+        public bool finishTransactions() { 
+        //the slave is dead and we need to finish the transactions that were stored in the replic
+            List<TransactionWrapper> possibleToAbort = new List<TransactionWrapper>();
+            List<TransactionWrapper> impossibleToAbort = new List<TransactionWrapper>();
+            foreach (TransactionWrapper t in transacções_state_Replication) {
+                if (t.isImpossibleToAbort(t)) {
+                    impossibleToAbort.Add(t);
+                }
+                if (t.isPossibleToAbort(t)) {
+                    possibleToAbort.Add(t);
+                }
+            
+            }
+            foreach (TransactionWrapper t in impossibleToAbort)
+            {
+                t.CommitTransaction();
+            }
+            foreach (TransactionWrapper t in possibleToAbort)
+            {
+                t.CommitTransaction();
+            }
+
+
+
+
+            return true;
+        }
+
         public void printHistory() {
 
             Console.WriteLine("Replicação do server " + slaveId);
@@ -690,5 +721,7 @@ namespace Master
             }
         
         }
+
+
     }
 }

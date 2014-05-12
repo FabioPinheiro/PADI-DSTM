@@ -121,6 +121,9 @@ namespace Master
 
             return slave.findTransaction(port, counter);
         }
+        public int getReplic() {
+            return slave.getReplic();
+        }
 
 
 
