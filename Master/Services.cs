@@ -98,6 +98,31 @@ namespace Master
         public bool createInReplica(PadIntStored padInt, int hash, bool newhash) {
             return slave.createInReplica(padInt, hash, newhash);
         }
+        public bool lockInReplica(int uid, String lockby)
+        {
+            return slave.lockInReplica(uid, lockby);
+        }
+        public bool unlockInReplica(int uid, String lockby)
+        {
+            return slave.unlockInReplica(uid, lockby);
+        }
+        public bool commitInReplica() {
+            return slave.commitInReplica();
+        }
+        public bool setValueInReplica(int uid, int value, String newVersion, String oldVersion)
+        {
+            return slave.setValueInReplica(uid, value, newVersion, oldVersion);
+        }
+        public void addTransaction(TransactionWrapper newTx) {
+
+            slave.addTransaction(newTx);
+        }
+        public TransactionWrapper findTransaction(int port, long counter) {
+
+            return slave.findTransaction(port, counter);
+        }
+
+
 
 
     }

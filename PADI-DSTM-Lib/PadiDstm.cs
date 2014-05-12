@@ -14,6 +14,7 @@ namespace PADI_DSTM
     public class PadiDstm
     {
         private static int port = 0;
+        private static int replic = 0; //add
         private static IMasterService master;
         private static ISlaveService slave; // some slave
         private static Transaction tx;
@@ -150,8 +151,12 @@ namespace PADI_DSTM
         void mergePassive(SortedList<int, SortedList<int, PadIntStored>> auxPadInts, List<TransactionWrapper> finish_transactions);
 
         bool createInReplica(PadIntStored padInt, int hash, bool newhash);
-
-
+        bool lockInReplica(int uid, String lockby);
+        bool unlockInReplica(int uid, String lockby);
+        bool commitInReplica();
+        bool setValueInReplica(int uid, int value, String newVersion, String oldVersion);
+        void addTransaction(TransactionWrapper newTx);
+        TransactionWrapper findTransaction(int port, long counter);
     }
 
     [Serializable] // passar por referencia; já não nessecario
@@ -435,8 +440,9 @@ namespace PADI_DSTM
         private Int64 counter;
         private Object lockState = new Object();
         public int abortou = 0;
+        private ISlaveService replic;
 
-        public TransactionWrapper(ISlaveService slave, Transaction transaction, int port, Int64 counter) //FIXME remove port
+        public TransactionWrapper(ISlaveService slave, Transaction transaction, int port, Int64 counter, ISlaveService replic) //FIXME remove port
         {
             this.port = port; //FIXME é para remover!!!
             this.slave = slave;
@@ -444,6 +450,7 @@ namespace PADI_DSTM
             timeStramp = DateTime.Now.ToString("s");
             state = State.possibleToAbort;
             this.counter = counter;
+            this.replic = replic;
         }
 
         //###########################################################
@@ -650,6 +657,7 @@ namespace PADI_DSTM
                     throw new TxException("ChangeState, ImpossibleToAbort when it was to Abort");
                 state=status;
             }
+            replic.findTransaction(port, counter).changeState(status);
         }
         private State readState() {
 
@@ -660,6 +668,12 @@ namespace PADI_DSTM
             }
 
             return aux;
+        }
+        public int getPort() {
+            return port;
+        }
+        public long getCounter() {
+            return counter;
         }
 
         public bool isImpossibleToAbort(TransactionWrapper t) {

@@ -252,9 +252,16 @@ namespace Master
             Console.WriteLine("SET VALUE!! " + value + " isMine? " + isMine(uid));
             if (isMine(uid))
             {
+                ISlaveService slave = connectToReplic();
                 myResponsability[hashUid(uid)][uid].setVaule(value, newVersion, oldVersion);
-                Console.WriteLine("SET VALUE!! " + value + "  version  " + newVersion);
-                return true;
+                if (slave.setValueInReplica(uid, value, newVersion, oldVersion))
+                {
+                    Console.WriteLine("SET VALUE!! " + value + "  version  " + newVersion);
+                    return true;
+                }
+                throw new TxException("failed to set value in replica"); //TODO CHANGE THIS
+               
+                //return true;
             }
             else
             {
@@ -274,8 +281,11 @@ namespace Master
         {
             if (isMine(uid))
             {
+                ISlaveService slave = connectToReplic();
                 myResponsability[hashUid(uid)][uid].unlockPadInt(lockby);
-                return true;
+                if (slave.unlockInReplica(uid, lockby))
+                    return true;
+                throw new TxException("failed to unlock in replica"); //TODO CHANGE THIS
             }
             else
             {
@@ -291,8 +301,10 @@ namespace Master
         }
         public bool lockPadInt(int uid, String lockby)
         {
+
             if (isMine(uid))
             {
+                ISlaveService slave = connectToReplic();
                 if (!myResponsability[hashUid(uid)][uid].lockPadInt(lockby)) {
                     //get the Transaction ID of the lock, in the ID has the port of the slave.
                    /*String beenLockedBy = myResponsability[hashUid(uid)][uid].getLockby(); 
@@ -320,7 +332,9 @@ namespace Master
                    } */
                    return false;
                 }
-                return true;
+                if (slave.lockInReplica(uid, lockby))
+                    return true;
+                throw new TxException("failed to lock in replica"); //TODO CHANGE THIS
             }
             else
             {
@@ -407,8 +421,10 @@ namespace Master
         }
         //###########################################################
         public bool CommitTransaction(Transaction t){
-            TransactionWrapper newTx = new PADI_DSTM.TransactionWrapper(cs, t, this.port, counter.update());
+            ISlaveService replic = connectToReplic();
+            TransactionWrapper newTx = new PADI_DSTM.TransactionWrapper(cs, t, this.port, counter.update(), replic);
             transacções_state.Add(newTx);
+            replic.addTransaction(newTx);
             Console.WriteLine("CommitTransaction no SLAVE!");
             bool aux= newTx.CommitTransaction(); 
             abortou += newTx.abortou;
@@ -522,11 +538,28 @@ namespace Master
 
 
         public bool commitInReplica() {
+            //call the history
             return true;
         }
-        public bool lockInReplica() {
+        public bool lockInReplica(int uid, String lockby)
+        {
+            //call the history
+            //history.myReplication
             return true;
         }
+        public bool unlockInReplica(int uid, String lockby)
+        {
+            //call the history
+            history.myReplication[hashUid(uid)][uid].unlockPadInt(lockby);
+
+            return true;
+        }
+
+        public bool setValueInReplica(int uid, int value, String newVersion, String oldVersion) {
+            history.myReplication[hashUid(uid)][uid].setVaule(value, newVersion, oldVersion);
+            return true;
+        }
+
         public void printSlave()
         {
             Console.WriteLine("O servidor " + port);
@@ -544,7 +577,22 @@ namespace Master
         
         }
 
+        public void addTransaction(TransactionWrapper newTx) {
+            history.transacções_state_Replication.Add(newTx);
+        }
+        public TransactionWrapper findTransaction(int port, long counter) {
+            TransactionWrapper tx = null;
+            foreach(TransactionWrapper t in history.transacções_state_Replication){
+                if (t.getPort() == port && t.getCounter() == counter) {
 
+                    tx = t;
+                }
+            
+            }
+
+            return tx;
+        
+        }
     }
 
     public class Counter {
@@ -563,9 +611,9 @@ namespace Master
     }
     public class History {
         int slaveId; //o slave que está a replicar
-        SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
+        public SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
         //$$$$$$$$ COORDENADOR
-        List<TransactionWrapper> transacções_state_Replication = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
+        public List<TransactionWrapper> transacções_state_Replication = new List<TransactionWrapper>(); //key: The transaction, value: state (true if live, false is deth ou diyng)
         public int getId() {
             return slaveId;
         }
