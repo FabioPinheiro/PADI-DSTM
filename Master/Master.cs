@@ -67,14 +67,17 @@ namespace Master
                 if (numberOfSlaves == 0)
                     return 0;
                 Console.WriteLine("Entrou no lock");
-                int aux = slaves[8087 + (roundRobin++ % numberOfSlaves)];
+                int offset;
+                int aux;
                 int i= 0;
                 while (i < numberOfSlaves) {
-                    Console.WriteLine("Ciclo  valor i: " + i +" aux value: " + aux+ "  aux e I: " + aux+i);
+                    offset = 8087 + (roundRobin++ % numberOfSlaves);
+                    aux = slaves[offset];
+                    Console.WriteLine("Ciclo  valor i: " + i + " offset value: " + offset + "  aux e I: " + aux + i);
                     if (aux != -1) //check if it's alive :D
                     {
-                        Console.WriteLine("o slave é: " + aux);
-                        return aux;
+                        Console.WriteLine("o slave é: " + offset);
+                        return offset;
                     }
                     else {
                         roundRobin++;
@@ -431,13 +434,6 @@ namespace Master
                 Console.WriteLine("procura quem é replica que " + slaveId + " tem.");   
                 foreach (KeyValuePair<int, int> kvp in slaves)
                 {
-                    if (kvp.Value == 1)
-                    { //is alive
-                        Console.WriteLine("A replica que tem é o " + kvp.Key);
-                        found = true;
-                        replicId = kvp.Key;
-                    }
-
                     if (kvp.Key == slaveId)
                     {
                         if (found)
@@ -446,7 +442,13 @@ namespace Master
                             //a replica vai ser a ultima.
                             continue;
                         }
-                    } 
+                    }
+                    if (kvp.Value == 1)
+                    { //is alive
+                        Console.WriteLine("A replica que tem é o " + kvp.Key);
+                        found = true;
+                        replicId = kvp.Key;
+                    }
                 }
 
             }

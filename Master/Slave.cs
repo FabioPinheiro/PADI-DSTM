@@ -86,10 +86,11 @@ namespace Master
             }
             myReplication = master.whereIsMyReplica(port);
             int serverBefore = master.whichReplicaDoIHave(port);
+            Console.WriteLine("Registei-me sou o " + port + " e a minha replica é " + myReplication + "e eu replico o " + serverBefore);
             history = new History(serverBefore);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + serverBefore + "/MyRemoteObjectName");
             slave.reorganizeGrid();
-
+            reorganizeGrid();
             currentStatus = LIVE;
         }
         private String getStatus()
@@ -574,7 +575,7 @@ namespace Master
         public void changeReplic(SortedList<int, SortedList<int, PadIntStored>> myNewReplication, List<TransactionWrapper> transacções_state_Replication_new, int slaveIdnew)
         {
 
-            Console.WriteLine("I am the new replic of " + slaveId );
+            Console.WriteLine("I am the new replic of " + slaveIdnew);
             myReplication = myNewReplication;
             transacções_state_Replication = transacções_state_Replication_new;
             slaveId = slaveIdnew;
