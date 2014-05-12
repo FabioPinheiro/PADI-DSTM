@@ -51,6 +51,7 @@ namespace Master
                 Console.WriteLine("Foram mortos: " + slave.matei);
                 Console.WriteLine("foram abortados: " + slave.abortou);
                 monitor.Abort();
+                slave.printSlave();
             }
 
 

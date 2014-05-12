@@ -484,8 +484,6 @@ namespace Master
             //call the slave
             //send the info! using this addToReplic
             slave.mergePassive(auxPadInts, finish_transactions);
-            
-
         }
         public void reorganizeGrid() {
             int replicaId = master.whereIsMyReplica(port);
@@ -527,6 +525,22 @@ namespace Master
         }
         public bool lockInReplica() {
             return true;
+        }
+        public void printSlave()
+        {
+            Console.WriteLine("O servidor " + port);
+            foreach (KeyValuePair<int, SortedList<int, PadIntStored>> kvp in myResponsability)
+            {
+                Console.WriteLine("Hash number " + kvp.Key);
+                foreach (KeyValuePair<int, PadIntStored> k in kvp.Value)
+                {
+                    Console.WriteLine("PadInt number " + kvp.Key);
+
+                }
+
+            }
+            history.printHistory();
+        
         }
 
 
@@ -610,6 +624,22 @@ namespace Master
         public List<TransactionWrapper> moveCoordinator()
         {
             return transacções_state_Replication;
+        }
+
+        public void printHistory() {
+
+            Console.WriteLine("Replicação do server " + slaveId);
+            foreach (KeyValuePair<int, SortedList<int, PadIntStored>> kvp in myReplication)
+            {
+                Console.WriteLine("Hash number " + kvp.Key);
+                foreach (KeyValuePair<int, PadIntStored> k in kvp.Value)
+                {
+                    Console.WriteLine("PadInt number " + kvp.Key);
+
+                }
+            
+            }
+        
         }
     }
 }

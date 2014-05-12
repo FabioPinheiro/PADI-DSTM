@@ -499,10 +499,10 @@ namespace PADI_DSTM
             }
             return true;
         }
-        private bool TxCommitAUX()//FIXME muitos problemas de consistencia
+        private bool TxCommitAUX()
         {
             Console.WriteLine("TxCommitAUX()");
-            if (!reasonsForSuicide()) //tem motivos para isso !!
+            if (!reasonsForSuicide()) 
             {
                 Console.WriteLine("TxCommitAUX -> reasonsForSuicide!!");
                 return false;
@@ -513,19 +513,14 @@ namespace PADI_DSTM
                 {
                     if (!lockAllPadIntAndCheckVersion())
                         return false;
-                    //check this!!
-
-                    
+     
                     else
                     {
-
                         //Em teoria nunca vai chegar aqui... pois aborta antes
                         if (readState() == State.Abort){
-
                             abortou++;
                             throw new Exception(); //Remove this after debug
                             //return false;
-
                         }
                         else
                         {

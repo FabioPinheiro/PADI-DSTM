@@ -55,15 +55,6 @@ namespace Master
                 }
 
             }
-
-          /*  if (numberOfSlaves > 1)
-            {
-                Console.WriteLine("muda o sitio onde esta replicado o server: " + serverBefore);
-                ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + serverBefore + "/MyRemoteObjectName");
-                slave.reorganizeGrid();
-            }*/
-
-            
             return port++;
         }
 
@@ -134,12 +125,10 @@ namespace Master
             }
             return aux;
         }
-
         public PadIntStored accessPadInt(int uid)
         {
             return new PadIntStored(uid);
         }
-
         public bool hashPadInts(int uid)
         {
             if (myResponsability.ContainsKey(hashUid(uid)))
@@ -173,8 +162,6 @@ namespace Master
             PadIntStored aux = slave.accessPadInt(uid);
             return aux;
         }
-
-
         public bool setMine(int port, int hash)
         {
             //for a avisar todos os slaves que os numeros com a hash <hash> pertencem ao slave com o port <port>
@@ -207,7 +194,6 @@ namespace Master
                 return true;
             }
         }
-
         public bool freeze(String url)
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
