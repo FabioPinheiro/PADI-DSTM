@@ -85,7 +85,11 @@ namespace Master
 
             }
             myReplication = master.whereIsMyReplica(port);
-            history = new History(master.whichReplicaDoIHave(port));
+            int serverBefore = master.whichReplicaDoIHave(port);
+            history = new History(serverBefore);
+            ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + serverBefore + "/MyRemoteObjectName");
+            slave.reorganizeGrid();
+
             currentStatus = LIVE;
         }
         private String getStatus()
@@ -485,11 +489,12 @@ namespace Master
         }
         public void reorganizeGrid() {
             int replicaId = master.whereIsMyReplica(port);
-            changeReplica(replicaId);
+            if(replicaId != port)
+                changeReplica(replicaId);
         }
         //change the replica because the replica died OR a new server was added.
         private void changeReplica(int replicaId) {
-            Console.WriteLine("muda o sitio onde esta replicado o server: " + replicaId);
+            Console.WriteLine("muda o sitio onde esta replicado o server: " + port + " para a" + replicaId);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + replicaId + "/MyRemoteObjectName");
             slave.modifyHistory(myResponsability, transacções_state, port);
         

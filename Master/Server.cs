@@ -32,7 +32,6 @@ namespace Master
 
                 Thread checkMonitor = new Thread(new ThreadStart(master.checkMonitor));
                 checkMonitor.Start();
-                Console.WriteLine("wtf?");
                 System.Console.ReadLine();
                 checkMonitor.Abort();
             }

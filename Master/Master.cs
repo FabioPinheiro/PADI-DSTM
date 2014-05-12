@@ -48,7 +48,7 @@ namespace Master
             lock (slaves)
             {
                 numberOfSlaves++;
-                slaves.Add(port, port); //TODO correct this
+                slaves.Add(port, 1);
                 lock (slavesMonitor)
                 {
                     slavesMonitor.Add(port, 1);
@@ -56,16 +56,17 @@ namespace Master
 
             }
 
-            if (numberOfSlaves > 1)
+          /*  if (numberOfSlaves > 1)
             {
                 Console.WriteLine("muda o sitio onde esta replicado o server: " + serverBefore);
                 ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + serverBefore + "/MyRemoteObjectName");
                 slave.reorganizeGrid();
-            }
+            }*/
 
             
             return port++;
         }
+
         public int getSlave()
         {
             Console.WriteLine("get slave");
@@ -313,7 +314,7 @@ namespace Master
         {
             lock (slavesMonitor)
             {
-                Console.WriteLine("O " + slaveId + " I'm alive recebido");
+               // Console.WriteLine("O " + slaveId + " I'm alive recebido");
                 slavesMonitor[slaveId] = 1;
                 return true;
             }
@@ -325,12 +326,12 @@ namespace Master
                 lock(slavesMonitor){
                     foreach (KeyValuePair<int, int> kvp in slavesMonitor.ToArray())
                     {
-                        Console.WriteLine("estou dentro do for");
+                       // Console.WriteLine("estou dentro do for");
                         if (kvp.Value == 1)
                         {
                             slavesMonitor[kvp.Key] = 0;
-                            Console.WriteLine(slavesMonitor[kvp.Key]);
-                            Console.WriteLine(kvp.Key + " IS alive :D :D");
+                           // Console.WriteLine(slavesMonitor[kvp.Key]);
+                           // Console.WriteLine(kvp.Key + " IS alive :D :D");
                         }
                         else
                         {
@@ -340,7 +341,7 @@ namespace Master
                             //call Replication methods.
                             Console.WriteLine("Removed from Actives "+ kvp.Key);
                         }
-                        Console.WriteLine("sai");
+                       // Console.WriteLine("sai");
                          
                     }
                 }
@@ -435,7 +436,6 @@ namespace Master
             return replicId;
         
         }
-
         public int whichReplicaDoIHave(int slaveId) {
             int replicId = 0;
 
