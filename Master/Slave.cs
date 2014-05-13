@@ -28,7 +28,7 @@ namespace Master
         public int abortou = 0;
         public TcpChannel channelToOut; //change to a list or something of tcpChannel
         public TcpChannel channelListening;
-        SlaveServices cs;
+        SlaveServices cs; //for this slave
         IMasterService master;
         IDictionary propBag;
         private int port;
@@ -89,7 +89,15 @@ namespace Master
             Console.WriteLine("Registei-me sou o " + port + " e a minha replica é " + myReplication + "e eu replico o " + serverBefore);
             history = new History(serverBefore);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + serverBefore + "/MyRemoteObjectName");
-            slave.reorganizeGrid();
+            try
+            {
+                slave.reorganizeGrid();
+            }
+            catch (SocketException)
+            {
+            //replic is dead, warn master :D
+            
+            }
             reorganizeGrid();
             currentStatus = LIVE;
         }
@@ -185,7 +193,15 @@ namespace Master
 
                 myResponsability[hashUid(uid)].Add(uid, aux);
                 slave = connectToReplic();
-                if (slave.createInReplica(aux, location, false))
+                bool rep = false;
+                try {
+                   rep =  slave.createInReplica(aux, location, false);
+                }
+                catch(SocketException){
+                //slave is dead, warn master, replicate in the new server
+                
+                }
+                if (rep)
                     return aux;
                 else {
 
@@ -208,7 +224,17 @@ namespace Master
                     aux.setVersion( DateTime.Now.ToString("s") + ":" + port + ":" + counter.update());
                     myResponsability[location].Add(uid, aux);
                     slave = connectToReplic();
-                    if (slave.createInReplica(aux, location, true))
+
+                    bool rep = false;
+
+                    try {
+                    rep = slave.createInReplica(aux, location, true);
+                    }
+                    catch (SocketException) {
+                        //slave is dead, warn master, replicate in the new server
+
+                    }
+                    if (rep)
                         return aux;
                     else
                     {
@@ -254,7 +280,17 @@ namespace Master
             {
                 ISlaveService slave = connectToReplic();
                 myResponsability[hashUid(uid)][uid].setVaule(value, newVersion, oldVersion);
-                if (slave.setValueInReplica(uid, value, newVersion, oldVersion))
+                bool rep = false;
+                try { 
+                rep = slave.setValueInReplica(uid, value, newVersion, oldVersion);
+                }
+                catch (SocketException) {
+                    //slave is dead, warn master, replicate in the new server
+
+                
+                }
+
+                if (rep)
                 {
                     Console.WriteLine("SET VALUE!! " + value + "  version  " + newVersion);
                     return true;
@@ -271,7 +307,14 @@ namespace Master
                 else
                 {
                     ISlaveService slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-                    return slaveAUX.setVaule(uid, value, newVersion, oldVersion);
+                    try
+                    {
+                        return slaveAUX.setVaule(uid, value, newVersion, oldVersion);
+                    }
+                    catch (SocketException) {
+                        //slave is dead, warn master, replicate in the new server
+                        return true;
+                    }
                 }
 
 
@@ -283,7 +326,16 @@ namespace Master
             {
                 ISlaveService slave = connectToReplic();
                 myResponsability[hashUid(uid)][uid].unlockPadInt(lockby);
-                if (slave.unlockInReplica(uid, lockby))
+                bool myrep = false;
+                try { 
+                    myrep = slave.unlockInReplica(uid, lockby);
+                }
+                catch (SocketException) {
+                    //slave is dead, warn master, replicate in the new server
+
+                
+                }
+                if (myrep)
                     return true;
                 throw new TxException("failed to unlock in replica"); //TODO CHANGE THIS
             }
@@ -295,7 +347,14 @@ namespace Master
                 else
                 {
                     ISlaveService slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-                    return slaveAUX.unlockPadInt(uid, lockby);
+                    try
+                    {
+                        return slaveAUX.unlockPadInt(uid, lockby);
+                    }
+                    catch (SocketException) {
+                        //slave is dead, warn master, replicate in the new server
+                        return true;
+                    }
                 }
             }
         }
@@ -332,7 +391,14 @@ namespace Master
                    } */
                    return false;
                 }
-                if (slave.lockInReplica(uid, lockby))
+                bool rep = false;
+                try {
+                    rep = slave.lockInReplica(uid, lockby);
+                }
+                catch(SocketException){
+                    //slave is dead, warn master, replicate in the new server
+                }
+                if (rep)
                     return true;
                 throw new TxException("failed to lock in replica"); //TODO CHANGE THIS
             }
@@ -344,7 +410,15 @@ namespace Master
                 else
                 {
                     ISlaveService slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-                    return slaveAUX.lockPadInt(uid, lockby);
+                    try
+                    {
+                        return slaveAUX.lockPadInt(uid, lockby);
+                    }
+                    catch (SocketException)
+                    {
+                        //slave is dead, warn master, replicate in the new server
+                        return true;
+                    }
                 }
             }
         }
@@ -392,15 +466,31 @@ namespace Master
             return NONE; // means that that type of uid%PrimeNumber does not exist at this moment! 
         }
         private PadIntStored createExternalPadInt(int uid, int location)
-        {
+        { 
+           
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-            PadIntStored aux = slave.createPadInt(uid);
+            PadIntStored aux = null;
+            try {
+                aux = slave.createPadInt(uid);
+            }
+            catch (SocketException) { 
+            //slave is dead, warn master, replicate in the new server
+            }
+            
             return aux;
         }
         private PadIntStored accessExternalPadInt(int uid, int location)
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-            PadIntStored aux = slave.accessPadInt(uid);
+            PadIntStored aux = null;
+             try {
+             aux = slave.accessPadInt(uid);
+             }
+             catch (SocketException)
+             {
+                 //slave is dead, warn master, replicate in the new server
+             }
+
             return aux;
         }
         public bool setResponsability(int port, int hash)
@@ -503,7 +593,14 @@ namespace Master
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + myReplication + "/MyRemoteObjectName");
             //call the slave
             //send the info! using this addToReplic
-            slave.mergePassive(auxPadInts, finish_transactions);
+            try
+            {
+                slave.mergePassive(auxPadInts, finish_transactions);
+            }
+            catch (SocketException)
+            {
+                //slave is dead, warn master, replicate in the new server
+            }
         }
         public void reorganizeGrid() {
             int replicaId = master.whereIsMyReplica(port);
@@ -514,8 +611,14 @@ namespace Master
         private void changeReplica(int replicaId) {
             Console.WriteLine("muda o sitio onde esta replicado o server: " + port + " para a" + replicaId);
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + replicaId + "/MyRemoteObjectName");
-            slave.modifyHistory(myResponsability, transacções_state, port);
-        
+            try
+            {
+                slave.modifyHistory(myResponsability, transacções_state, port);
+            }
+            catch (SocketException)
+            {
+                //slave is dead, warn master, replicate in the new server
+            }
         }
         //merge the data with the data of the replication.
         public void mergePassive(SortedList<int, SortedList<int, PadIntStored>> rep, List<TransactionWrapper> finish_transactions)
