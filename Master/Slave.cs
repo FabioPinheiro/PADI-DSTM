@@ -53,8 +53,7 @@ namespace Master
                     //Console.WriteLine("olá");
                     master.ping(port);
                 }
-                System.Threading.Thread.Sleep(500); //menos tempo para rever se o status nao mudou, pode morrer
-
+                System.Threading.Thread.Sleep(100); //menos tempo para rever se o status nao mudou, pode morrer
             }
         }
 
@@ -584,6 +583,7 @@ namespace Master
             //move the history to primary!!
             foreach(KeyValuePair<int, SortedList<int, PadIntStored>> kvp in aux){
                 myResponsability.Add(kvp.Key,kvp.Value);
+                master.updateHash(kvp.Key, port);
             }
             foreach (TransactionWrapper transaction in aux_transactions) {
                 //check if this works!!

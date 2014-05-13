@@ -202,6 +202,11 @@ namespace Master
         public int whichReplicaDoIHave(int slaveId){
             return master.whichReplicaDoIHave(slaveId);
         }
+        public bool updateHash(int hash, int slaveId) {
+
+            return master.updateHash(hash, slaveId);
+        }
+
 
 
     }

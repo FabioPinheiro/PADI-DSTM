@@ -219,6 +219,11 @@ namespace Master
                 return true;
             }
         }
+
+        public bool updateHash(int hash, int slaveId) {
+
+            return true;
+        }
         public bool freeze(String url)
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);

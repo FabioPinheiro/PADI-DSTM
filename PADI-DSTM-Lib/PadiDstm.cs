@@ -149,6 +149,7 @@ namespace PADI_DSTM
         bool ping(int slaveId);
         int whereIsMyReplica(int slaveId);
         int whichReplicaDoIHave(int slaveId);
+        bool updateHash(int hash, int slaveId);
     }
     public interface ISlaveService
     {
@@ -313,6 +314,7 @@ namespace PADI_DSTM
                 }
                 catch (SocketException) {
                     //this guy is dead, warn master, replicate in the new server
+                    //It is in the commit!!!
                     return false;
                 }
             }
