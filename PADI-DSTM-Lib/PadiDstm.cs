@@ -7,6 +7,7 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Net.Sockets;
 
 namespace PADI_DSTM
 {
@@ -48,7 +49,17 @@ namespace PADI_DSTM
             }
             TcpChannel channel = new TcpChannel();
             slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + port + "/MyRemoteObjectName");
-            replic = slave.getReplic();
+            try
+            {
+             replic = slave.getReplic();
+               
+
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+
+            }
+
             slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + replic + "/MyRemoteObjectName");
             if (slave == null)
             {
@@ -67,7 +78,15 @@ namespace PADI_DSTM
             if (tx != null)
             {
                 Console.WriteLine("TxCommit!!! SIM OUTRA VEZ!!");
-                bool ret = slave.CommitTransaction(tx);
+
+                bool ret = false;
+                try
+                {
+                    ret = slave.CommitTransaction(tx);
+                }
+                catch (SocketException) {
+                    //this guy is dead, warn master, replicate in the new server
+                }
                 tx = null;
                 return ret;
             }
@@ -242,13 +261,24 @@ namespace PADI_DSTM
 
         public bool setLock(String transactionID, ISlaveService slave)
         {
-            lockedAux = slave.lockPadInt(padInt.getID(), transactionID);
-
+            try
+            {
+                lockedAux = slave.lockPadInt(padInt.getID(), transactionID);
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+            }
             return lockedAux;
         }
         public bool setUnlock(String transactionID, ISlaveService slave)
         {
-            lockedAux = !slave.unlockPadInt(padInt.getID(), transactionID);
+            try
+            {
+                lockedAux = !slave.unlockPadInt(padInt.getID(), transactionID);
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+            }
             if (!lockedAux)
                 return true;
             else throw new TxException("setUnlock FAIL nuca devia chegarr aqui"); //FIXME!!!!!!!!!!!!!!!!!!
@@ -256,8 +286,17 @@ namespace PADI_DSTM
 
         public bool confirmVersion(ISlaveService slave)
         {
-            Console.WriteLine("confirmVersion TEM PROBLEMAS!! accessVersion " + accessVersion + "  ####  padint Version " + slave.accessPadiIntVersion(padInt.getID()) + "  RESULT  " + (accessVersion == slave.accessPadiIntVersion(padInt.getID())));
-            if (accessVersion == slave.accessPadiIntVersion(padInt.getID()))
+            String padiVersion = "";
+            try
+            {
+                Console.WriteLine("accessVersion " + accessVersion + "  ####  padint Version " + slave.accessPadiIntVersion(padInt.getID()) + "  RESULT  " + (accessVersion == slave.accessPadiIntVersion(padInt.getID())));
+                padiVersion = slave.accessPadiIntVersion(padInt.getID());
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+            }
+
+            if (accessVersion == padiVersion )
                 return true;
             else return false;
         }
@@ -268,7 +307,14 @@ namespace PADI_DSTM
 
             if (readedAux || writedAux)
             {
-                return slave.setVaule(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
+                try
+                {
+                    return slave.setVaule(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
+                }
+                catch (SocketException) {
+                    //this guy is dead, warn master, replicate in the new server
+                    return false;
+                }
             }
             else
                 return true;//FIXME padInt o PadInt deve ser informado disto ou não? ()alterar a verção
@@ -355,8 +401,28 @@ namespace PADI_DSTM
         private PadIntStored remotingAccessPadIntStored(int uid, bool toCreate, ISlaveService slave)
         {
             if (toCreate)
-                return slave.createPadInt(uid);
-            else return slave.accessPadInt(uid);
+            {
+                try
+                {
+                    return slave.createPadInt(uid);
+                }
+                catch (SocketException)
+                {
+                    //this guy is dead, warn master, replicate in the new server
+                    return null;
+                }
+            }
+            else
+            {
+                try
+                {
+                    return slave.accessPadInt(uid);
+                }
+                catch (SocketException) {
+                    //this guy is dead, warn master, replicate in the new server
+                    return null;
+                }
+            }
         }
         public PadInt remotingAccessPadInt(int uid, bool toCreate, ISlaveService slave)
         {
@@ -661,7 +727,13 @@ namespace PADI_DSTM
                     throw new TxException("ChangeState, ImpossibleToAbort when it was to Abort");
                 state=status;
             }
-            replic.findTransaction(port, counter).changeState(status);
+            try
+            {
+                replic.findTransaction(port, counter).changeState(status);
+            }
+            catch (SocketException) {
+                //this guy replica is dead, warn master, replicate in the new server
+            }
         }
         private State readState() {
 

@@ -514,7 +514,14 @@ namespace Master
             ISlaveService replic = connectToReplic();
             TransactionWrapper newTx = new PADI_DSTM.TransactionWrapper(cs, t, this.port, counter.update(), replic);
             transacções_state.Add(newTx);
-            replic.addTransaction(newTx);
+            try
+            {
+                replic.addTransaction(newTx);
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+
+            }
             Console.WriteLine("CommitTransaction no SLAVE!");
             bool aux= newTx.CommitTransaction(); 
             abortou += newTx.abortou;
