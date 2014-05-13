@@ -156,13 +156,28 @@ namespace Master
         private PadIntStored createExternalPadInt(int uid, int location)
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-            PadIntStored aux = slave.createPadInt(uid);
+            PadIntStored aux = null;
+            try
+            {
+                slave.createPadInt(uid);
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+            }
             return aux;
         }
         private PadIntStored accessExternalPadInt(int uid, int location)
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-            PadIntStored aux = slave.accessPadInt(uid);
+            PadIntStored aux = null;
+            try
+            {
+                slave.accessPadInt(uid);
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+
+            }
             return aux;
         }
         public bool setMine(int port, int hash)
@@ -191,7 +206,14 @@ namespace Master
                     {
                         Console.WriteLine("comunica com " + kvp.Key);
                         ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
-                        slave.setResponsability(port, hash);
+                        try
+                        {
+                            slave.setResponsability(port, hash);
+                        }
+                        catch (SocketException) {
+                            //this guy is dead, warn master, replicate in the new server
+
+                        }
                     }
                 }
                 return true;
@@ -201,7 +223,14 @@ namespace Master
         {
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
             slaves.Remove(getPortFromUrl(url));
-            slave.freeze();
+            try
+            {
+                slave.freeze();
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+
+            }
             return true;
         }
         public bool recover(String url)
@@ -210,7 +239,14 @@ namespace Master
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
             slaves.Add(getPortFromUrl(url), getPortFromUrl(url));
             addToActives(getPortFromUrl(url));
-            slave.recover();
+            try
+            {
+                slave.recover();
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+
+            }
             return true;
         }
         public bool fail(String url)
@@ -219,9 +255,25 @@ namespace Master
 
             slaves.Remove(getPortFromUrl(url));
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), url);
-            if (slave.fail())
+            bool replic = false;
+            try
             {
-               removeFromActives(slave.getSlaveId());
+                replic = slave.fail();
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+
+            }
+            if (replic)
+            {
+                try
+                {
+                    removeFromActives(slave.getSlaveId());
+                }
+                catch (SocketException) {
+                    //this guy is dead, warn master, replicate in the new server
+
+                }
                 return true;
             }
             else
@@ -239,7 +291,14 @@ namespace Master
                 foreach (KeyValuePair<int, int> kvp in slaves)
                 {
                     ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
-                    slave.status();
+                    try
+                    {
+                        slave.status();
+                    }
+                    catch (SocketException) {
+                        //this guy is dead, warn master, replicate in the new server
+
+                    }
                 }
                 return true;
             }
@@ -369,11 +428,26 @@ namespace Master
             int hasreplic = whichReplicaDoIHave(slaveId);
             Console.WriteLine("Informa a " + replication + " que este " + slaveId + " está morto Para por como Activo");
             ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + replication + "/MyRemoteObjectName");
-            slave.slaveIsDead(slaveId);
-            Console.WriteLine("Informa a " + hasreplic + " que este " + slaveId + " está morto Para replicar noutro sitio");
-            slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + hasreplic + "/MyRemoteObjectName");
-            slave.slaveIsDead(slaveId);
+            try
+            {
+                slave.slaveIsDead(slaveId);
+            }
+            catch (SocketException)
+            {
+                //this guy is dead, warn master, replicate in the new server
 
+            }
+            Console.WriteLine("Informa a " + hasreplic + " que este " + slaveId + " está morto Para replicar noutro sitio");
+            
+            slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + hasreplic + "/MyRemoteObjectName");
+            try
+            {
+                slave.slaveIsDead(slaveId);
+            }
+            catch (SocketException) {
+                //this guy is dead, warn master, replicate in the new server
+
+            }
 
 
         }
