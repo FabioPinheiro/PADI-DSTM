@@ -221,7 +221,25 @@ namespace Master
         }
 
         public bool updateHash(int hash, int slaveId) {
+            padIntsLocation.Add(hash, port);
+            lock (slaves)
+            {
+                //envia a info para todos: Melhorar se houver tempo
+                foreach (KeyValuePair<int, int> kvp in slaves)
+                {
+                    Console.WriteLine("comunica com " + kvp.Key);
+                    ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
+                    try
+                    {
+                        slave.setResponsability(port, hash);
+                    }
+                    catch (SocketException)
+                    {
+                        //this guy is dead, warn master, replicate in the new server
 
+                    }
+                }
+            }
             return true;
         }
         public bool freeze(String url)
@@ -411,6 +429,7 @@ namespace Master
                 slavesMonitor.Remove(slaveId);
             
             }
+            slaveIsDead(slaveId);
         }
         private void addToActives(int slaveId) {
             lock (slaves)
