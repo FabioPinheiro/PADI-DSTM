@@ -97,6 +97,15 @@ namespace PADI_DSTM
                     master.slaveIsDead(port);
                     //slave_replic.CommitTransaction(tx); // check if needed.
                 }
+                try
+                {
+                    //fixme
+                    slave_replic.CommitTransaction(tx);
+                }
+                catch (SocketException) {
+                    master.slaveIsDead(replic);
+                
+                }
                 tx = null;
                 return ret;
             }
@@ -281,6 +290,14 @@ namespace PADI_DSTM
                 master.slaveIsDead(slaveId);
                 //call the function
             }
+            try
+            {
+                //call to replic to lock
+            }
+            catch (SocketException) {
+                master.slaveIsDead(slaveId);
+            
+            }
             return lockedAux;
         }
         public bool setUnlock(String transactionID, ISlaveService slave, IMasterService master, int slaveId)
@@ -292,6 +309,15 @@ namespace PADI_DSTM
             catch (SocketException) {
                master.slaveIsDead(slaveId);
                 //call the function
+            }
+            try
+            {
+                //call to replic to lock
+            }
+            catch (SocketException)
+            {
+                master.slaveIsDead(slaveId);
+
             }
             if (!lockedAux)
                 return true;
