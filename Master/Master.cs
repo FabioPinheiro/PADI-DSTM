@@ -162,7 +162,9 @@ namespace Master
                 slave.createPadInt(uid);
             }
             catch (SocketException) {
-                //this guy is dead, warn master, replicate in the new server
+                slaveIsDead(location);
+
+               //call the function
             }
             return aux;
         }
@@ -175,7 +177,9 @@ namespace Master
                 slave.accessPadInt(uid);
             }
             catch (SocketException) {
-                //this guy is dead, warn master, replicate in the new server
+                slaveIsDead(location);
+
+                //call the function
 
             }
             return aux;
@@ -211,7 +215,8 @@ namespace Master
                             slave.setResponsability(port, hash);
                         }
                         catch (SocketException) {
-                            //this guy is dead, warn master, replicate in the new server
+                            slaveIsDead(port);
+                            //call the function
 
                         }
                     }
@@ -235,7 +240,8 @@ namespace Master
                     }
                     catch (SocketException)
                     {
-                        //this guy is dead, warn master, replicate in the new server
+                        slaveIsDead(slaveId);
+                        //call the function
 
                     }
                 }
@@ -251,7 +257,8 @@ namespace Master
                 slave.freeze();
             }
             catch (SocketException) {
-                //this guy is dead, warn master, replicate in the new server
+                slaveIsDead(getPortFromUrl(url));
+                Console.WriteLine("O slave está morto");
 
             }
             return true;
@@ -267,8 +274,8 @@ namespace Master
                 slave.recover();
             }
             catch (SocketException) {
-                //this guy is dead, warn master, replicate in the new server
-
+                slaveIsDead(getPortFromUrl(url));
+                Console.WriteLine("O slave está morto");
             }
             return true;
         }
@@ -284,7 +291,8 @@ namespace Master
                 replic = slave.fail();
             }
             catch (SocketException) {
-                //this guy is dead, warn master, replicate in the new server
+                slaveIsDead(getPortFromUrl(url));
+                //do nothing weee xD
 
             }
             if (replic)
@@ -294,7 +302,8 @@ namespace Master
                     removeFromActives(slave.getSlaveId());
                 }
                 catch (SocketException) {
-                    //this guy is dead, warn master, replicate in the new server
+                    slaveIsDead(getPortFromUrl(url));
+                    //weird stuff
 
                 }
                 return true;
@@ -319,7 +328,8 @@ namespace Master
                         slave.status();
                     }
                     catch (SocketException) {
-                        //this guy is dead, warn master, replicate in the new server
+                        slaveIsDead(kvp.Key);
+                        System.Console.WriteLine("Slave" + kvp.Key + "current status: is Dead");
 
                     }
                 }
@@ -458,7 +468,8 @@ namespace Master
             }
             catch (SocketException)
             {
-                //this guy is dead, warn master, replicate in the new server
+                //slaveIsDead(replication);
+                throw new Exception("Isto nao devia de acontecer... só toleramos uma falta");
 
             }
             Console.WriteLine("Informa a " + hasreplic + " que este " + slaveId + " está morto Para replicar noutro sitio");
@@ -469,16 +480,14 @@ namespace Master
                 slave.slaveIsDead(slaveId);
             }
             catch (SocketException) {
-                //this guy is dead, warn master, replicate in the new server
 
+                throw new Exception("Isto nao devia de acontecer... só toleramos uma falta");
             }
 
 
         }
 
 
-        //usado para criar a grid e para actualizar a grid.
-        //Devolve o Id do slave que replica o slaveId
         public int whereIsMyReplica(int slaveId) {
             int replicId = 0;
             lock (slaves)

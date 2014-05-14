@@ -94,7 +94,8 @@ namespace Master
             }
             catch (SocketException)
             {
-            //replic is dead, warn master :D
+                master.slaveIsDead(serverBefore);
+            //call the function
             
             }
             reorganizeGrid();
@@ -197,14 +198,21 @@ namespace Master
                    rep =  slave.createInReplica(aux, location, false);
                 }
                 catch(SocketException){
-                //slave is dead, warn master, replicate in the new server
+                    master.slaveIsDead(myReplication);
+                    try
+                    {
+                       rep =  connectToReplic().createInReplica(aux, location, false);
+                    }
+                    catch (SocketException) {
+                        Console.WriteLine("ISto nao devia de acontecer...");
+                    }
                 
                 }
                 if (rep)
                     return aux;
                 else {
 
-                    //throw new TxException();
+                    throw new Exception("só toleramos uma falta");
                 }
                 return aux;
             }
@@ -230,13 +238,21 @@ namespace Master
                     rep = slave.createInReplica(aux, location, true);
                     }
                     catch (SocketException) {
-                        //slave is dead, warn master, replicate in the new server
-
+                        master.slaveIsDead(myReplication);
+                        try
+                        {
+                            rep = connectToReplic().createInReplica(aux, location, false);
+                        }
+                        catch (SocketException)
+                        {
+                            Console.WriteLine("ISto nao devia de acontecer...");
+                        }
                     }
                     if (rep)
                         return aux;
                     else
                     {
+                        throw new Exception("só toleramos uma falta");
 
                        // throw new TxException();
                     }
@@ -285,7 +301,15 @@ namespace Master
                 }
                 catch (SocketException) {
                     //slave is dead, warn master, replicate in the new server
-
+                    master.slaveIsDead(myReplication);
+                    try
+                    {
+                        rep = connectToReplic().createInReplica(aux, location, false);
+                    }
+                    catch (SocketException)
+                    {
+                        Console.WriteLine("ISto nao devia de acontecer...");
+                    }
                 
                 }
 
@@ -311,7 +335,8 @@ namespace Master
                         return slaveAUX.setVaule(uid, value, newVersion, oldVersion);
                     }
                     catch (SocketException) {
-                        //slave is dead, warn master, replicate in the new server
+                        master.slaveIsDead(location);
+                            //call the function
                         return true;
                     }
                 }
@@ -331,7 +356,15 @@ namespace Master
                 }
                 catch (SocketException) {
                     //slave is dead, warn master, replicate in the new server
-
+                    master.slaveIsDead(myReplication);
+                    try
+                    {
+                        myrep = connectToReplic().unlockInReplica(uid, lockby);
+                    }
+                    catch (SocketException)
+                    {
+                        Console.WriteLine("ISto nao devia de acontecer...");
+                    }
                 
                 }
                 if (myrep)
@@ -351,7 +384,8 @@ namespace Master
                         return slaveAUX.unlockPadInt(uid, lockby);
                     }
                     catch (SocketException) {
-                        //slave is dead, warn master, replicate in the new server
+                        master.slaveIsDead(location);
+                        //call the function
                         return true;
                     }
                 }
@@ -395,7 +429,15 @@ namespace Master
                     rep = slave.lockInReplica(uid, lockby);
                 }
                 catch(SocketException){
-                    //slave is dead, warn master, replicate in the new server
+                    master.slaveIsDead(myReplication);
+                    try
+                    {
+                        rep = connectToReplic().lockInReplica(uid, lockby);
+                    }
+                    catch (SocketException)
+                    {
+                        Console.WriteLine("ISto nao devia de acontecer...");
+                    }
                 }
                 if (rep)
                     return true;
@@ -415,7 +457,8 @@ namespace Master
                     }
                     catch (SocketException)
                     {
-                        //slave is dead, warn master, replicate in the new server
+                        master.slaveIsDead(location);
+                        //call the function
                         return true;
                     }
                 }
@@ -472,8 +515,9 @@ namespace Master
             try {
                 aux = slave.createPadInt(uid);
             }
-            catch (SocketException) { 
-            //slave is dead, warn master, replicate in the new server
+            catch (SocketException) {
+                master.slaveIsDead(location);
+                //call the function
             }
             
             return aux;
@@ -487,7 +531,8 @@ namespace Master
              }
              catch (SocketException)
              {
-                 //slave is dead, warn master, replicate in the new server
+                 master.slaveIsDead(location);
+                 //call the function
              }
 
             return aux;
@@ -518,7 +563,15 @@ namespace Master
                 replic.addTransaction(newTx);
             }
             catch (SocketException) {
-                //this guy is dead, warn master, replicate in the new server
+                master.slaveIsDead(myReplication);
+                try
+                {
+                    connectToReplic().addTransaction(newTx);
+                }
+                catch (SocketException)
+                {
+                    Console.WriteLine("ISto nao devia de acontecer...");
+                }
 
             }
             Console.WriteLine("CommitTransaction no SLAVE!");

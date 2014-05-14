@@ -206,6 +206,9 @@ namespace Master
 
             return master.updateHash(hash, slaveId);
         }
+        public void slaveIsDead(int slaveId) {
+            master.slaveIsDead(slaveId);
+        }
 
 
 

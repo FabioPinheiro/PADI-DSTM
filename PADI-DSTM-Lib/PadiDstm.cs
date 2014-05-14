@@ -150,6 +150,7 @@ namespace PADI_DSTM
         int whereIsMyReplica(int slaveId);
         int whichReplicaDoIHave(int slaveId);
         bool updateHash(int hash, int slaveId);
+        void slaveIsDead(int slaveId);
     }
     public interface ISlaveService
     {
