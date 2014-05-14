@@ -304,7 +304,7 @@ namespace Master
                     master.slaveIsDead(myReplication);
                     try
                     {
-                        rep = connectToReplic().createInReplica(aux, location, false);
+                        rep = connectToReplic().setValueInReplica(uid, value, newVersion, oldVersion);
                     }
                     catch (SocketException)
                     {
@@ -556,7 +556,7 @@ namespace Master
         //###########################################################
         public bool CommitTransaction(Transaction t){
             ISlaveService replic = connectToReplic();
-            TransactionWrapper newTx = new PADI_DSTM.TransactionWrapper(cs, t, this.port, counter.update(), replic);
+            TransactionWrapper newTx = new PADI_DSTM.TransactionWrapper(cs, t, this.port, counter.update(), replic, master);
             transacções_state.Add(newTx);
             try
             {
