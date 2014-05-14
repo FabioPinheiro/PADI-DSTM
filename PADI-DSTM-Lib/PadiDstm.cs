@@ -58,7 +58,15 @@ namespace PADI_DSTM
             catch (SocketException) {
                 //this guy is dead, warn master, replicate in the new server
                 master.slaveIsDead(port);
-                //call the function
+                port = master.getSlave();
+                slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + port + "/MyRemoteObjectName");
+                try {
+                    replic = slave.getReplic();
+                }
+                catch (SocketException) { 
+                    Console.WriteLine("TxBegin: error so toleramos uma falta");
+                }
+                
             }
 
             slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + replic + "/MyRemoteObjectName");
@@ -87,7 +95,7 @@ namespace PADI_DSTM
                 }
                 catch (SocketException) {
                     master.slaveIsDead(port);
-                    //call the function
+                    //slave_replic.CommitTransaction(tx); // check if needed.
                 }
                 tx = null;
                 return ret;
@@ -248,7 +256,6 @@ namespace PADI_DSTM
         private bool writedAux = false;/*for client*/
         private int valueAux;/*for client*/
         private bool lockedAux = false;/*for salve*/
-        private IMasterService master = null;
 
         public bool islockedAux() { return lockedAux; }
 
@@ -317,6 +324,7 @@ namespace PADI_DSTM
             {
                 try
                 {
+
                     return slave.setVaule(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
                 }
                 catch (SocketException) {
