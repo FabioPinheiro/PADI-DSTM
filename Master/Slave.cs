@@ -33,7 +33,7 @@ namespace Master
         IDictionary propBag;
         private int port;
         private int myReplication;//where this Slave is replicated
-        private Counter counter;//adicionar a Version da transacçao.
+        public Counter counter;//adicionar a Version da transacçao.
         //############# EXISTE EM TODOS OS SERVIDORES ###############################
         SortedList<int, int> padIntsLocation = new SortedList<int, int>(); //key is the hash, value is the port of the slave that is responsable for that hash
         SortedList<int, SortedList<int, PadIntStored>> myResponsability = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
@@ -702,15 +702,31 @@ namespace Master
             return true;
         }
 
+        public String accessPadiIntVersionInReplica(int uid) {
+            PadIntStored padint = acessPadIntInReplica(uid);
+            if (padint != null)
+            {
+                return padint.getVersion();
+            }
+            return "ERROR:ERROR";
+        }
+        public PadIntStored createPadIntInReplica(int uid) {
 
-        public bool commitInReplica() {
+            
+            return null;
+        }
+        public PadIntStored acessPadIntInReplica(int uid) {
+            return null;
+        }
+        public bool commitInReplica(TransactionWrapper t) {
             //call the history
             return true;
         }
         public bool lockInReplica(int uid, String lockby)
         {
             //call the history
-            //history.myReplication
+            history.myReplication[hashUid(uid)][uid].lockPadInt(lockby);
+
             return true;
         }
         public bool unlockInReplica(int uid, String lockby)
@@ -721,6 +737,13 @@ namespace Master
             return true;
         }
 
+        public long updateCounter() {
+            return counter.update();
+        }
+        public long updateCounterInReplica()
+        {
+            return history.counter.update();
+        }
         public bool setValueInReplica(int uid, int value, String newVersion, String oldVersion) {
             history.myReplication[hashUid(uid)][uid].setVaule(value, newVersion, oldVersion);
             return true;
@@ -776,6 +799,7 @@ namespace Master
         } 
     }
     public class History {
+        public Counter counter = new Counter();
         int slaveId; //o slave que está a replicar
         public SortedList<int, SortedList<int, PadIntStored>> myReplication = new SortedList<int, SortedList<int, PadIntStored>>(); //key is the hash, value is a list of PadiInt's stored in this master
         //$$$$$$$$ COORDENADOR

@@ -89,18 +89,29 @@ namespace PADI_DSTM
                 Console.WriteLine("TxCommit!!! SIM OUTRA VEZ!!");
 
                 bool ret = false;
+                long counter;
+                try
+                {
+                    counter = slave.updateCounter();
+                    slave_replic.updateCounterInReplica();
+                }
+                catch (SocketException) {
+                    master.slaveIsDead(port);
+                    counter = slave_replic.updateCounterInReplica();
+                
+                }
+                TransactionWrapper newTx = new TransactionWrapper(slave, tx, port, counter ,slave_replic, master);
+
                 try
                 {
                     ret = slave.CommitTransaction(tx);
                 }
                 catch (SocketException) {
                     master.slaveIsDead(port);
-                    //slave_replic.CommitTransaction(tx); // check if needed.
                 }
                 try
                 {
-                    //fixme
-                    slave_replic.CommitTransaction(tx);
+                    slave_replic.commitInReplica(newTx);
                 }
                 catch (SocketException) {
                     master.slaveIsDead(replic);
@@ -122,7 +133,7 @@ namespace PADI_DSTM
         }
         public static bool Status()
         {
-            //fala com o master
+            //fala com o master of puppets
             return master.status(); ;
         }
         public static bool Fail(string URL)
@@ -197,10 +208,16 @@ namespace PADI_DSTM
         bool createInReplica(PadIntStored padInt, int hash, bool newhash);
         bool lockInReplica(int uid, String lockby);
         bool unlockInReplica(int uid, String lockby);
-        bool commitInReplica();
+        bool commitInReplica(TransactionWrapper t);
         bool setValueInReplica(int uid, int value, String newVersion, String oldVersion);
         void addTransaction(TransactionWrapper newTx);
         TransactionWrapper findTransaction(int port, long counter);
+        long updateCounter();
+        long updateCounterInReplica();
+        String accessPadiIntVersionInReplica(int uid);
+        PadIntStored createPadIntInReplica(int uid);
+        PadIntStored acessPadIntInReplica(int uid);
+
     }
 
     [Serializable] // passar por referencia; já não nessecario
@@ -282,17 +299,23 @@ namespace PADI_DSTM
 
         public bool setLock(String transactionID, ISlaveService slave, IMasterService master, int slaveId)
         {
+            ISlaveService slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + master.whereIsMyReplica(slaveId) + "/MyRemoteObjectName");
+            bool repeat = true;
             try
             {
                 lockedAux = slave.lockPadInt(padInt.getID(), transactionID);
+                
             }
             catch (SocketException) {
+                lockedAux = slave_replic.lockInReplica(padInt.getID(), transactionID);
+                repeat = false;
                 master.slaveIsDead(slaveId);
-                //call the function
+
             }
             try
-            {
-                //call to replic to lock
+            { 
+                if(repeat)
+                slave_replic.lockInReplica(padInt.getID(), transactionID);
             }
             catch (SocketException) {
                 master.slaveIsDead(slaveId);
@@ -302,16 +325,22 @@ namespace PADI_DSTM
         }
         public bool setUnlock(String transactionID, ISlaveService slave, IMasterService master, int slaveId)
         {
+            ISlaveService slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + master.whereIsMyReplica(slaveId) + "/MyRemoteObjectName");
+            bool repeat = true;
             try
             {
                 lockedAux = !slave.unlockPadInt(padInt.getID(), transactionID);
+
             }
             catch (SocketException) {
-               master.slaveIsDead(slaveId);
-                //call the function
+                lockedAux = slave_replic.unlockInReplica(padInt.getID(), transactionID);
+                repeat = false;
+                master.slaveIsDead(slaveId);
             }
             try
             {
+                if(repeat)
+                slave_replic.unlockInReplica(padInt.getID(), transactionID);
                 //call to replic to lock
             }
             catch (SocketException)
@@ -326,6 +355,7 @@ namespace PADI_DSTM
 
         public bool confirmVersion(ISlaveService slave, IMasterService master, int slaveId)
         {
+            ISlaveService slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + master.whereIsMyReplica(slaveId) + "/MyRemoteObjectName");
             String padiVersion = "";
             try
             {
@@ -333,6 +363,7 @@ namespace PADI_DSTM
                 padiVersion = slave.accessPadiIntVersion(padInt.getID());
             }
             catch (SocketException) {
+                padiVersion = slave_replic.accessPadiIntVersionInReplica(padInt.getID());
                 master.slaveIsDead(slaveId);
                 //call the function
             }
@@ -345,20 +376,21 @@ namespace PADI_DSTM
         public bool commitVaule(String transactionID, ISlaveService slave, IMasterService master, int slaveId)
         {
             Console.WriteLine("  TRANSACTION COMMITVALUE  " + this.toString());
+            bool ret;
+            ISlaveService slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + master.whereIsMyReplica(slaveId) + "/MyRemoteObjectName");
 
             if (readedAux || writedAux)
             {
                 try
                 {
-
-                    return slave.setVaule(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
+                    ret = slave.setVaule(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
+                    slave_replic.setValueInReplica(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
+                    return ret;
                 }
                 catch (SocketException) {
-                    //this guy is dead, warn master, replicate in the new server
-                    //It is in the commit!!!
+                    ret = slave_replic.setValueInReplica(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
                     master.slaveIsDead(slaveId);
-                    //call the function
-                    return false;
+                    return ret;
                 }
             }
             else
@@ -445,18 +477,24 @@ namespace PADI_DSTM
 
         private PadIntStored remotingAccessPadIntStored(int uid, bool toCreate, ISlaveService slave, IMasterService master, int slaveId)
         {
+
+            ISlaveService slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + master.whereIsMyReplica(slaveId) + "/MyRemoteObjectName");
+            PadIntStored ret = null;
             if (toCreate)
             {
                 try
                 {
-                    return slave.createPadInt(uid);
+                    ret = slave.createPadInt(uid);
+                    slave_replic.createPadIntInReplica(uid);
+                    return ret;
                 }
                 catch (SocketException)
                 {
                     //this guy is dead, warn master, replicate in the new server
+                    ret = slave_replic.createPadIntInReplica(uid);
                     master.slaveIsDead(slaveId);
                     //call the function
-                    return null;
+                    return ret;
                 }
             }
             else
@@ -466,10 +504,10 @@ namespace PADI_DSTM
                     return slave.accessPadInt(uid);
                 }
                 catch (SocketException) {
-                    //this guy is dead, warn master, replicate in the new server
-                    // master.slaveIsDead(port);
-                    //call the function
-                    return null;
+                    ret = slave_replic.acessPadIntInReplica(uid);
+                    master.slaveIsDead(slaveId);
+                    
+                    return ret;
                 }
             }
         }
@@ -774,7 +812,6 @@ namespace PADI_DSTM
             }
             catch (SocketException) {
                 master.slaveIsDead(slaveId);
-                //call the function 
             }
         }
         private State readState() {

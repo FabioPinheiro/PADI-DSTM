@@ -56,8 +56,14 @@ namespace Master
 
 
 
-            System.Console.WriteLine("THE END");
-
+            System.Console.WriteLine("THIS IS THE END");
+            Console.WriteLine("Hold your breath and count to ten");
+            Console.WriteLine("Feel the earth move and then");
+            Console.WriteLine("Hear my heart burst again");
+            string test1 = "\n\nLet the sky fall (let the sky fall)\nWhen it crumbles (when it crumbles)\nWe will stand tall (we will stand tall)\nFace it all together\nAt skyfall";
+            string test = "\n\nLet the sky fall \nWe will stand tall \nAt skyfall \nOh...";
+            Console.WriteLine(test1);
+            Console.WriteLine(test);
 
         }
 

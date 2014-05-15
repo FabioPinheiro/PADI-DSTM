@@ -106,8 +106,8 @@ namespace Master
         {
             return slave.unlockInReplica(uid, lockby);
         }
-        public bool commitInReplica() {
-            return slave.commitInReplica();
+        public bool commitInReplica(TransactionWrapper t) {
+            return slave.commitInReplica(t);
         }
         public bool setValueInReplica(int uid, int value, String newVersion, String oldVersion)
         {
@@ -124,7 +124,23 @@ namespace Master
         public int getReplic() {
             return slave.getReplic();
         }
+        public long updateCounter() {
+            return slave.updateCounter();
+        }
+        public long updateCounterInReplica()
+        {
+            return slave.updateCounterInReplica();
+        }
 
+        public String accessPadiIntVersionInReplica(int uid) {
+            return slave.accessPadiIntVersionInReplica(uid);
+        }
+        public PadIntStored createPadIntInReplica(int uid) {
+            return slave.createPadIntInReplica(uid);
+        }
+        public PadIntStored acessPadIntInReplica(int uid) {
+            return slave.acessPadIntInReplica(uid);
+        }
 
 
 
