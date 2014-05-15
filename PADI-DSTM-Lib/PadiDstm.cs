@@ -217,6 +217,7 @@ namespace PADI_DSTM
         String accessPadiIntVersionInReplica(int uid);
         PadIntStored createPadIntInReplica(int uid);
         PadIntStored acessPadIntInReplica(int uid);
+   
 
     }
 
@@ -485,7 +486,7 @@ namespace PADI_DSTM
                 try
                 {
                     ret = slave.createPadInt(uid);
-                    slave_replic.createPadIntInReplica(uid);
+                    //slave_replic.createPadIntInReplica(uid);
                     return ret;
                 }
                 catch (SocketException)

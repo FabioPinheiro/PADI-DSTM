@@ -159,12 +159,14 @@ namespace Master
             PadIntStored aux = null;
             try
             {
-                slave.createPadInt(uid);
+                aux = slave.createPadInt(uid);
             }
             catch (SocketException) {
+                location = whereIsMyReplica(location);
+                slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                aux = slave.createPadInt(uid);
                 slaveIsDead(location);
 
-               //call the function
             }
             return aux;
         }
@@ -177,9 +179,10 @@ namespace Master
                 slave.accessPadInt(uid);
             }
             catch (SocketException) {
+                location = whereIsMyReplica(location);
+                slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                aux = slave.accessPadInt(uid);
                 slaveIsDead(location);
-
-                //call the function
 
             }
             return aux;
@@ -215,8 +218,8 @@ namespace Master
                             slave.setResponsability(port, hash);
                         }
                         catch (SocketException) {
+                           
                             slaveIsDead(port);
-                            //call the function
 
                         }
                     }
@@ -240,9 +243,8 @@ namespace Master
                     }
                     catch (SocketException)
                     {
-                        slaveIsDead(slaveId);
-                        //call the function
-
+                       
+                        slaveIsDead(port);
                     }
                 }
             }

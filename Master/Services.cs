@@ -144,6 +144,7 @@ namespace Master
 
 
 
+
     }
     public class MasterServices : MarshalByRefObject, IMasterService
     {

@@ -94,9 +94,7 @@ namespace Master
             }
             catch (SocketException)
             {
-                master.slaveIsDead(serverBefore);
-            //call the function
-            
+                master.slaveIsDead(serverBefore);            
             }
             reorganizeGrid();
             currentStatus = LIVE;
@@ -296,7 +294,7 @@ namespace Master
                 ISlaveService slave = connectToReplic();
                 myResponsability[hashUid(uid)][uid].setVaule(value, newVersion, oldVersion);
                 bool rep = false;
-                try { 
+               /* try { 
                 rep = slave.setValueInReplica(uid, value, newVersion, oldVersion);
                 }
                 catch (SocketException) {
@@ -311,15 +309,15 @@ namespace Master
                         Console.WriteLine("ISto nao devia de acontecer...");
                     }
                 
-                }
+                }*/
 
-                if (rep)
-                {
+                /*if (rep)
+                {*/
                     Console.WriteLine("SET VALUE!! " + value + "  version  " + newVersion);
                     return true;
-                }
+                /*}
                 throw new TxException("failed to set value in replica"); //TODO CHANGE THIS
-               
+               */
                 //return true;
             }
             else
@@ -384,9 +382,12 @@ namespace Master
                         return slaveAUX.unlockPadInt(uid, lockby);
                     }
                     catch (SocketException) {
+                        location = master.whereIsMyReplica(location);
+                        slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                        bool ret = slaveAUX.unlockPadInt(uid, lockby);
                         master.slaveIsDead(location);
                         //call the function
-                        return true;
+                        return ret;
                     }
                 }
             }
@@ -457,9 +458,12 @@ namespace Master
                     }
                     catch (SocketException)
                     {
+                        location = master.whereIsMyReplica(location);
+                        slaveAUX = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                        bool ret = slaveAUX.lockPadInt(uid, lockby);
                         master.slaveIsDead(location);
                         //call the function
-                        return true;
+                        return ret;
                     }
                 }
             }
@@ -516,6 +520,10 @@ namespace Master
                 aux = slave.createPadInt(uid);
             }
             catch (SocketException) {
+                location = master.whereIsMyReplica(location);
+                slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                
+                aux = slave.createPadInt(uid);
                 master.slaveIsDead(location);
                 //call the function
             }
@@ -531,6 +539,9 @@ namespace Master
              }
              catch (SocketException)
              {
+                 location = master.whereIsMyReplica(location);
+                 slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                 aux = slave.accessPadInt(uid); 
                  master.slaveIsDead(location);
                  //call the function
              }
@@ -539,16 +550,11 @@ namespace Master
         }
         public bool setResponsability(int port, int hash)
         {
-            if (padIntsLocation.ContainsKey(hash))
-            {
-                return false;
-            }
-            else
-            {
-                padIntsLocation[hash] = port;
-                return true;
-            }
+            padIntsLocation[hash] = port;
+            return true;
         }
+
+
         private int hashUid(int uid)
         {
             return uid % MYPRIME;
@@ -710,13 +716,75 @@ namespace Master
             }
             return "ERROR:ERROR";
         }
-        public PadIntStored createPadIntInReplica(int uid) {
+        public int whereIsPadIntReplica(int uid)
+        {
+            int aux;
+            int location = hashUid(uid);
 
-            
-            return null;
+            if (history.myReplication.ContainsKey(location))
+                return MINE;
+            if (padIntsLocation.TryGetValue(location, out aux)) //need to connect to new server!
+                return aux;
+            return NONE; // means that that type of uid%PrimeNumber does not exist at this moment! 
+        }
+        public PadIntStored createPadIntInReplica(int uid) {
+            PadIntStored aux = null;
+            int location = whereIsPadIntReplica(uid);
+            //System.Console.WriteLine("begin location " + location + " uid  " + uid + " port: " + port);
+            if (location == MINE)
+            {
+                if (history.myReplication[hashUid(uid)].ContainsKey(uid))
+                {
+                    return history.myReplication[hashUid(uid)][uid].getVersion() == "none:0" ? myResponsability[hashUid(uid)][uid] : null;
+                }
+                aux = new PadIntStored(uid);
+                //fica com o novo porto e o update porque o Activo morreu.
+                aux.setVersion(DateTime.Now.ToString("s") + ":" + port + ":" + counter.update());
+                history.myReplication[hashUid(uid)].Add(uid, aux);      
+                return aux;
+            }
+            else
+            {
+                if (location == NONE)
+                {
+                    if (!master.setMine(port, hashUid(uid)))
+                    {
+                        return null;
+                    }
+                    location = hashUid(uid);
+                    padIntsLocation[location] = port;
+                    myResponsability.Add(location, new SortedList<int, PadIntStored>());
+                    aux = new PadIntStored(uid);
+                    //fica com o novo porto e o update porque o Activo morreu.
+
+                    aux.setVersion(DateTime.Now.ToString("s") + ":" + port + ":" + counter.update());
+                    myResponsability[location].Add(uid, aux);
+                    return aux;
+                }
+                else
+                {
+                    createExternalPadInt(uid, location);
+                }
+            }
+            return aux;
+
         }
         public PadIntStored acessPadIntInReplica(int uid) {
-            return null;
+            PadIntStored aux = null;
+            int location = whereIsPadIntReplica(uid);
+            if (location == NONE)
+            {
+                return null;
+            }
+            if (location == MINE)
+            {
+                aux = history.myReplication[hashUid(uid)][uid];
+            }
+            else
+            {
+                return accessExternalPadInt(uid, location);
+            }
+            return aux.getVersion() == "none:0" ? null : aux;
         }
         public bool commitInReplica(TransactionWrapper t) {
             //call the history
@@ -782,6 +850,7 @@ namespace Master
             return tx;
         
         }
+       
     }
 
     public class Counter {
@@ -892,6 +961,7 @@ namespace Master
 
             return true;
         }
+
 
         public void printHistory() {
 
