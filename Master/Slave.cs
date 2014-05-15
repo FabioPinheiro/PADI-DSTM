@@ -193,6 +193,7 @@ namespace Master
                 slave = connectToReplic();
                 bool rep = false;
                 try {
+                    Console.WriteLine("Criando na Replica");
                    rep =  slave.createInReplica(aux, location, false);
                 }
                 catch(SocketException){
@@ -233,13 +234,14 @@ namespace Master
                     bool rep = false;
 
                     try {
-                    rep = slave.createInReplica(aux, location, true);
+                        Console.WriteLine("Criando na Replica ID: " + slave.getSlaveId());
+                        rep = slave.createInReplica(aux, location, true);
                     }
                     catch (SocketException) {
                         master.slaveIsDead(myReplication);
                         try
                         {
-                            rep = connectToReplic().createInReplica(aux, location, false);
+                            rep = connectToReplic().createInReplica(aux, location, true);
                         }
                         catch (SocketException)
                         {
@@ -669,6 +671,7 @@ namespace Master
             }
         }
         public void reorganizeGrid() {
+            myReplication = master.whichReplicaDoIHave(port);
             int replicaId = master.whereIsMyReplica(port);
             if(replicaId != port)
                 changeReplica(replicaId);
@@ -703,7 +706,7 @@ namespace Master
 
         public bool createInReplica(PadIntStored padInt, int hash, bool newhash)
         {
-            Console.WriteLine("Vai criar na Replica weeee");
+            Console.WriteLine("Vai criar na Replica weeee port= " + port);
             history.createInReplic(hash, padInt, newhash);
             return true;
         }
@@ -838,11 +841,13 @@ namespace Master
             history.transacções_state_Replication.Add(newTx);
         }
         public TransactionWrapper findTransaction(int port, long counter) {
+            Console.WriteLine("Find Transaction");
             TransactionWrapper tx = null;
             foreach(TransactionWrapper t in history.transacções_state_Replication){
                 if (t.getPort() == port && t.getCounter() == counter) {
+                    Console.WriteLine("I've Found the Transaction");
 
-                    tx = t;
+                    return tx = t;
                 }
             
             }

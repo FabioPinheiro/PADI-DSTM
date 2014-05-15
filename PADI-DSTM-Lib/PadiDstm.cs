@@ -86,7 +86,7 @@ namespace PADI_DSTM
         {
             if (tx != null)
             {
-                Console.WriteLine("TxCommit!!! SIM OUTRA VEZ!!");
+                Console.WriteLine("Entrou no TxCommit!!! SIM OUTRA VEZ!!");
 
                 bool ret = false;
                 long counter;
@@ -334,7 +334,7 @@ namespace PADI_DSTM
 
             }
             catch (SocketException) {
-                lockedAux = slave_replic.unlockInReplica(padInt.getID(), transactionID);
+                lockedAux = !slave_replic.unlockInReplica(padInt.getID(), transactionID);
                 repeat = false;
                 master.slaveIsDead(slaveId);
             }
@@ -667,6 +667,7 @@ namespace PADI_DSTM
             {
                 try
                 {
+                    Console.WriteLine("CommitAux -> Try");
                     if (!lockAllPadIntAndCheckVersion())
                         return false;
      
@@ -680,6 +681,8 @@ namespace PADI_DSTM
                         }
                         else
                         {
+                            Console.WriteLine("CommitAux -> antes do changeState");
+
                             changeState(State.impossibleToAbort, master, port); 
                             foreach (KeyValuePair<int, PadInt> pair in this.transaction.getPoolPadInt())
                             {
@@ -689,6 +692,7 @@ namespace PADI_DSTM
                                     throw new TxException("TxCommitAUX->commitVaule Fail (possivel inconcistencia)");
                                 }
                             }
+                            Console.WriteLine("CommitAux -> antes do changeState -> Commit");
                             changeState(State.Commited, master, port);
                         }
                     }
@@ -800,7 +804,7 @@ namespace PADI_DSTM
         }
         private void changeState(State status, IMasterService master, int slaveId)
         {
-           
+            Console.WriteLine("Entra no changeState");
             lock (lockState)
             {
                 if (status == State.impossibleToAbort && state == State.Abort && state == State.Commited)
@@ -809,11 +813,19 @@ namespace PADI_DSTM
             }
             try
             {
-                replic.findTransaction(port, counter).changeState(status, master, slaveId);
+                replic.findTransaction(port, counter).changeStateInReplic(status, master, slaveId);
             }
             catch (SocketException) {
                 master.slaveIsDead(slaveId);
             }
+            Console.WriteLine("Sai no changeState");
+
+        }
+        private void changeStateInReplic(State status, IMasterService master, int slaveId) { 
+            lock(lockState){
+                state = status;
+            }
+        
         }
         private State readState() {
 
