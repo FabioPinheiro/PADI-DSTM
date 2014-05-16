@@ -94,6 +94,7 @@ namespace Master
         {
             return ms;
         }
+
         public PadIntStored createPadInt(int uid)
         {
             System.Console.WriteLine("Vamos escrever");
@@ -596,7 +597,10 @@ namespace Master
             Console.WriteLine("A replica é o proprio");
             return replicId;
         
-        }        
+        }
+        public SortedList<int, int> getPadIntsLocation() {
+            return padIntsLocation;
+        }
     
 
         

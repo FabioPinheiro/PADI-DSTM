@@ -229,6 +229,9 @@ namespace Master
         public void slaveIsDead(int slaveId) {
             master.slaveIsDead(slaveId);
         }
+        public SortedList<int, int> getPadIntsLocation() {
+            return master.getPadIntsLocation();
+        }
 
 
 

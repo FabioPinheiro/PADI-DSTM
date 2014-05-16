@@ -184,6 +184,7 @@ namespace PADI_DSTM
         int whichReplicaDoIHave(int slaveId);
         bool updateHash(int hash, int slaveId);
         void slaveIsDead(int slaveId);
+        SortedList<int, int> getPadIntsLocation();
     }
     public interface ISlaveService
     {
@@ -527,9 +528,8 @@ namespace PADI_DSTM
                     return slave.accessPadInt(uid);
                 }
                 catch (SocketException) {
-                    ret = slave_replic.acessPadIntInReplica(uid);
+                    ret = slave_replic.accessPadInt(uid);
                     master.slaveIsDead(slaveId);
-                    
                     return ret;
                 }
             }

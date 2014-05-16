@@ -97,6 +97,7 @@ namespace Master
                 master.slaveIsDead(serverBefore);            
             }
             reorganizeGrid();
+            padIntsLocation = master.getPadIntsLocation();
             currentStatus = LIVE;
         }
         private String getStatus()
@@ -871,18 +872,26 @@ namespace Master
         }
 
         public void addTransaction(TransactionWrapper newTx) {
-            history.transacções_state_Replication.Add(newTx);
+            lock (history.transacções_state_Replication)
+            {
+                history.transacções_state_Replication.Add(newTx);
+            }
         }
         public TransactionWrapper findTransaction(int port, long counter) {
             Console.WriteLine("Find Transaction");
             TransactionWrapper tx = null;
-            foreach(TransactionWrapper t in history.transacções_state_Replication){
-                if (t.getPort() == port && t.getCounter() == counter) {
-                    Console.WriteLine("I've Found the Transaction");
+            lock (history.transacções_state_Replication)
+            {
+                foreach (TransactionWrapper t in history.transacções_state_Replication)
+                {
+                    if (t.getPort() == port && t.getCounter() == counter)
+                    {
+                        Console.WriteLine("I've Found the Transaction");
 
-                    return tx = t;
+                        return tx = t;
+                    }
+
                 }
-            
             }
 
             return tx;
@@ -922,7 +931,10 @@ namespace Master
 
             Console.WriteLine("I am the new replic of " + slaveIdnew);
             myReplication = myNewReplication;
-            transacções_state_Replication = transacções_state_Replication_new;
+            lock (transacções_state_Replication)
+            {
+                transacções_state_Replication = transacções_state_Replication_new;
+            }
             slaveId = slaveIdnew;
         }
 
