@@ -141,6 +141,9 @@ namespace Master
         public PadIntStored acessPadIntInReplica(int uid) {
             return slave.acessPadIntInReplica(uid);
         }
+        public int whereIsPadInt(int uid) {
+            return slave.whereIsPadInt(uid);
+        }
 
 
 

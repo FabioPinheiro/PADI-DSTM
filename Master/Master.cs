@@ -24,6 +24,7 @@ namespace Master
         private const int FROZEN = 0;
         private const int DETH = -1;
         static int currentStatus;
+        
 
         TcpChannel channel = new TcpChannel(8086);
         MasterServices ms;
@@ -35,7 +36,7 @@ namespace Master
         int port = 8087;
         int roundRobin = 0;
         int numberOfSlaves = 0;
-
+        int numberWithDeadSlaves = 0;
         public Master()
         {
             ms = new MasterServices(this);
@@ -48,6 +49,7 @@ namespace Master
             lock (slaves)
             {
                 numberOfSlaves++;
+                numberWithDeadSlaves++;
                 slaves.Add(port, 1);
                 lock (slavesMonitor)
                 {
@@ -71,7 +73,7 @@ namespace Master
                 int aux;
                 int i= 0;
                 while (i < numberOfSlaves) {
-                    offset = 8087 + (roundRobin++ % numberOfSlaves);
+                    offset = 8087 + (roundRobin++ % numberWithDeadSlaves);
                     aux = slaves[offset];
                     Console.WriteLine("Ciclo  valor i: " + i + " offset value: " + offset + "  aux e I: " + aux + i);
                     if (aux != -1) //check if it's alive :D
@@ -229,22 +231,23 @@ namespace Master
         }
 
         public bool updateHash(int hash, int slaveId) {
-            padIntsLocation.Add(hash, port);
+            //padIntsLocation.Add(hash, port);
+            padIntsLocation[hash] = slaveId;
             lock (slaves)
             {
                 //envia a info para todos: Melhorar se houver tempo
                 foreach (KeyValuePair<int, int> kvp in slaves)
                 {
-                    Console.WriteLine("comunica com " + kvp.Key);
-                    ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
+                    Console.WriteLine("UpdateHash comunica com " + kvp.Key);
+                    ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + slaveId + "/MyRemoteObjectName");
                     try
                     {
-                        slave.setResponsability(port, hash);
+                        slave.setResponsability(slaveId, hash);
                     }
                     catch (SocketException)
                     {
-                       
-                        slaveIsDead(port);
+
+                        slaveIsDead(slaveId);
                     }
                 }
             }
@@ -321,20 +324,34 @@ namespace Master
             {
 
                 printStatus();
+                bool slaveDead = false;
+                int whodied = 0;
                 //envia a info para todos: Melhorar se houver tempo
-                foreach (KeyValuePair<int, int> kvp in slaves)
+                lock (slaves)
                 {
-                    ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
-                    try
+                    Console.WriteLine("Vai imprimir o status dos slaves");
+                    foreach (KeyValuePair<int, int> kvp in slaves)
                     {
-                        slave.status();
-                    }
-                    catch (SocketException) {
-                        slaveIsDead(kvp.Key);
-                        System.Console.WriteLine("Slave" + kvp.Key + "current status: is Dead");
-
+                        ISlaveService slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + kvp.Key + "/MyRemoteObjectName");
+                        try
+                        {
+                            if (kvp.Value == 1)
+                                slave.status();
+                            else {
+                                continue;
+                            }
+                        }
+                        catch (SocketException)
+                        {
+                            System.Console.WriteLine("Slave" + kvp.Key + "current status: is Dead");
+                            slaveDead = true;
+                            whodied = kvp.Key;
+                        }
                     }
                 }
+                if(slaveDead)
+                    slaveIsDead(whodied); //deadlock
+
                 return true;
             }
             catch (RemotingException e)
@@ -419,7 +436,8 @@ namespace Master
                         else
                         {
                             //check if it's "kvp.Key" is dead
-                            removeFromActives(kvp.Key);
+
+                            slaveIsDead(kvp.Key);
 
                             //call Replication methods.
                             Console.WriteLine("Removed from Actives "+ kvp.Key);
@@ -441,7 +459,7 @@ namespace Master
                 slavesMonitor.Remove(slaveId);
             
             }
-            slaveIsDead(slaveId);
+            
         }
         private void addToActives(int slaveId) {
             lock (slaves)
@@ -458,7 +476,17 @@ namespace Master
         }
 
         public void slaveIsDead(int slaveId) {
+            Console.WriteLine("SLAVE IS DEAD!");
+            if(slaves[slaveId] == -1){
+                Console.WriteLine("It was already dead, don't worry we are working on that");
+                return;
+            }
+            numberOfSlaves--;
+            Console.WriteLine("Removed from Actives in SlaveIsDead " + slaveId);
 
+            removeFromActives(slaveId);
+
+            
                 //envia a info para todos: Melhorar se houver tempo
             int replication = whereIsMyReplica(slaveId);
             int hasreplic = whichReplicaDoIHave(slaveId);
@@ -565,7 +593,7 @@ namespace Master
                 return replicId;
             //NAO ENCONTREI NENHUM PANIC
             replicId = slaveId;
-            Console.WriteLine("A replica é o Master");
+            Console.WriteLine("A replica é o proprio");
             return replicId;
         
         }        

@@ -296,7 +296,7 @@ namespace Master
                 ISlaveService slave = connectToReplic();
                 myResponsability[hashUid(uid)][uid].setVaule(value, newVersion, oldVersion);
                 bool rep = false;
-               /* try { 
+                try { 
                 rep = slave.setValueInReplica(uid, value, newVersion, oldVersion);
                 }
                 catch (SocketException) {
@@ -311,16 +311,18 @@ namespace Master
                         Console.WriteLine("ISto nao devia de acontecer...");
                     }
                 
-                }*/
+                }
 
-                /*if (rep)
-                {*/
+                if (rep)
+                {
                     Console.WriteLine("SET VALUE!! " + value + "  version  " + newVersion);
                     return true;
-                /*}
-                throw new TxException("failed to set value in replica"); //TODO CHANGE THIS
-               */
-                //return true;
+                }
+                else
+                {
+                    throw new TxException("failed to set value in replica"); //TODO CHANGE THIS
+                }
+                return true;
             }
             else
             {
@@ -351,7 +353,8 @@ namespace Master
                 ISlaveService slave = connectToReplic();
                 myResponsability[hashUid(uid)][uid].unlockPadInt(lockby);
                 bool myrep = false;
-                try { 
+                try {
+                    Console.WriteLine("Fazendo unlock na replica");
                     myrep = slave.unlockInReplica(uid, lockby);
                 }
                 catch (SocketException) {
@@ -552,7 +555,16 @@ namespace Master
         }
         public bool setResponsability(int port, int hash)
         {
-            padIntsLocation[hash] = port;
+            if (padIntsLocation.ContainsKey(hash))
+            {
+                Console.WriteLine("modifica a hash");
+                padIntsLocation[hash] = port;
+            }
+            else
+            {
+                Console.WriteLine("adciona a hash");
+                padIntsLocation.Add(hash, port);
+            }
             return true;
         }
 
@@ -619,21 +631,22 @@ namespace Master
         public void slaveIsDead(int slaveId)
         {
             //I have the replica of the dead server. Must add to my data and replicate somewhere
+            int aux = myReplication;
             if (slaveId == history.getId())
             {
                 //Add to data
                 movePassiveToPrimary();
-
                 myReplication = master.whichReplicaDoIHave(port);
                 //add to where is replicated
 
 
             }
             //my replica died, change that :D
-            if (slaveId == myReplication)
+            if (slaveId == aux)
             {
-                int replicaId = master.whereIsMyReplica(port);
-                changeReplica(replicaId);
+                myReplication = master.whereIsMyReplica(port);
+                Console.WriteLine("trocando a replica " + myReplication);
+                changeReplica(myReplication);
             
             }
         }
@@ -643,12 +656,18 @@ namespace Master
             List<TransactionWrapper> finish_transactions = new List<TransactionWrapper>();
             //move the history to primary!!
             foreach(KeyValuePair<int, SortedList<int, PadIntStored>> kvp in aux){
-                myResponsability.Add(kvp.Key,kvp.Value);
+                if (myResponsability.ContainsKey(kvp.Key))
+                    myResponsability[kvp.Key] = kvp.Value;
+                else
+                {
+                    myResponsability.Add(kvp.Key, kvp.Value);
+                }
                 master.updateHash(kvp.Key, port);
             }
             foreach (TransactionWrapper transaction in aux_transactions) {
                 //check if this works!!
-                if (transaction.isImpossibleToAbort(transaction)) {
+                if (transaction.isImpossibleToAbort(transaction) || transaction.isPossibleToAbort(transaction))
+                {
                     finish_transactions.Add(transaction);
                 }
             }
@@ -667,6 +686,7 @@ namespace Master
             }
             catch (SocketException)
             {
+
                 //slave is dead, warn master, replicate in the new server
             }
         }
@@ -796,15 +816,28 @@ namespace Master
         public bool lockInReplica(int uid, String lockby)
         {
             //call the history
+            Console.WriteLine("lockinReplica uid:" + uid + " lockby " + lockby);
+            history.printHistory();
             history.myReplication[hashUid(uid)][uid].lockPadInt(lockby);
+            Console.WriteLine("END");
 
             return true;
         }
         public bool unlockInReplica(int uid, String lockby)
         {
             //call the history
-            history.myReplication[hashUid(uid)][uid].unlockPadInt(lockby);
+            Console.WriteLine("unlockinReplica uid:" + uid + " lockby " + lockby);
+            history.printHistory();
 
+            if (history.myReplication.ContainsKey(hashUid(uid)))
+                Console.WriteLine("TEM A KEY");
+            Console.WriteLine(hashUid(uid));
+            if(history.getId() == whereIsPadInt(uid)){
+            Console.WriteLine(history.myReplication[hashUid(uid)][uid].getLockby());//REBENTA AQUI.
+            history.myReplication[hashUid(uid)][uid].unlockPadInt(lockby); 
+            Console.WriteLine(history.myReplication[hashUid(uid)][uid].getLockby());
+            }
+            Console.WriteLine("END");
             return true;
         }
 
@@ -910,11 +943,17 @@ namespace Master
         {
             foreach (KeyValuePair<int, SortedList<int, PadIntStored>> kvp in rep)
             {
-                myReplication.Add(kvp.Key, kvp.Value);
+                if (myReplication.ContainsKey(kvp.Key))
+                {
+                    Console.WriteLine("AddToReplic: Key" + kvp.Key + " value " + kvp.Value);
+                    myReplication[kvp.Key] = kvp.Value;
+                }
+                else
+                {
+                    myReplication.Add(kvp.Key, kvp.Value);
+                }
             }
-            foreach (TransactionWrapper t in finish_transactions) { 
-                //DO Stuff
-            }
+            finishTransactions(finish_transactions);
         }
         //adiciona uma parte da hash a replicação
         public void addToReplic(int hasnumber, SortedList<int, PadIntStored> list)
@@ -939,11 +978,12 @@ namespace Master
             return transacções_state_Replication;
         }
 
-        public bool finishTransactions() { 
+        public bool finishTransactions(List<TransactionWrapper> tranAux) { 
         //the slave is dead and we need to finish the transactions that were stored in the replic
             List<TransactionWrapper> possibleToAbort = new List<TransactionWrapper>();
             List<TransactionWrapper> impossibleToAbort = new List<TransactionWrapper>();
-            foreach (TransactionWrapper t in transacções_state_Replication) {
+            foreach (TransactionWrapper t in tranAux)
+            {
                 if (t.isImpossibleToAbort(t)) {
                     impossibleToAbort.Add(t);
                 }
@@ -960,10 +1000,6 @@ namespace Master
             {
                 t.CommitTransaction();
             }
-
-
-
-
             return true;
         }
 

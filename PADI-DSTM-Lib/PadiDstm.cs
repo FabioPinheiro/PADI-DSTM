@@ -58,7 +58,10 @@ namespace PADI_DSTM
             catch (SocketException) {
                 //this guy is dead, warn master, replicate in the new server
                 master.slaveIsDead(port);
+                Console.WriteLine("TxBegin catch: port before: " + port);
                 port = master.getSlave();
+                Console.WriteLine("TxBegin catch: port after: "+ port);
+
                 slave = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + port + "/MyRemoteObjectName");
                 try {
                     replic = slave.getReplic();
@@ -217,7 +220,7 @@ namespace PADI_DSTM
         String accessPadiIntVersionInReplica(int uid);
         PadIntStored createPadIntInReplica(int uid);
         PadIntStored acessPadIntInReplica(int uid);
-   
+        int whereIsPadInt(int uid);
 
     }
 
@@ -245,6 +248,7 @@ namespace PADI_DSTM
         }
         public bool unlockPadInt(String lockby)
         {
+            Console.WriteLine("unlockPadInt");
             if (this.lockby == lockby)
             {
                 this.lockby = "none";
@@ -308,20 +312,28 @@ namespace PADI_DSTM
                 
             }
             catch (SocketException) {
-                lockedAux = slave_replic.lockInReplica(padInt.getID(), transactionID);
+                lockedAux = slave_replic.lockPadInt(padInt.getID(), transactionID);
                 repeat = false;
                 master.slaveIsDead(slaveId);
 
             }
-            try
-            { 
-                if(repeat)
-                slave_replic.lockInReplica(padInt.getID(), transactionID);
+            /*try
+            {
+                if (repeat)
+                {
+                   // Console.WriteLine("unlockInReplica Begin in " + slave_replic.getSlaveId());
+                    int location = slave_replic.whereIsPadInt(padInt.getID());
+                    ISlaveService aux_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                    location = aux_replic.getReplic();
+                    aux_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                    aux_replic.lockInReplica(padInt.getID(), transactionID);
+                   // Console.WriteLine("unlockInReplica End");
+                }
             }
             catch (SocketException) {
                 master.slaveIsDead(slaveId);
             
-            }
+            }*/
             return lockedAux;
         }
         public bool setUnlock(String transactionID, ISlaveService slave, IMasterService master, int slaveId)
@@ -334,21 +346,31 @@ namespace PADI_DSTM
 
             }
             catch (SocketException) {
-                lockedAux = !slave_replic.unlockInReplica(padInt.getID(), transactionID);
+                lockedAux = !slave_replic.unlockPadInt(padInt.getID(), transactionID);
                 repeat = false;
                 master.slaveIsDead(slaveId);
             }
-            try
+          /*  try
             {
-                if(repeat)
-                slave_replic.unlockInReplica(padInt.getID(), transactionID);
+                if (repeat)
+                {
+                    Console.WriteLine("unlockInReplica Begin in " + slave_replic.getSlaveId());
+                    int location = slave_replic.whereIsPadInt(padInt.getID());
+                    ISlaveService aux_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                    location = aux_replic.getReplic();
+                    aux_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
+                    
+                    aux_replic.unlockInReplica(padInt.getID(), transactionID);
+                    Console.WriteLine("unlockInReplica End");
+
+                }
                 //call to replic to lock
             }
             catch (SocketException)
             {
                 master.slaveIsDead(slaveId);
 
-            }
+            }*/
             if (!lockedAux)
                 return true;
             else throw new TxException("setUnlock FAIL nuca devia chegarr aqui"); //FIXME!!!!!!!!!!!!!!!!!!
@@ -385,11 +407,11 @@ namespace PADI_DSTM
                 try
                 {
                     ret = slave.setVaule(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
-                    slave_replic.setValueInReplica(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
+                    //slave_replic.setValueInReplica(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
                     return ret;
                 }
                 catch (SocketException) {
-                    ret = slave_replic.setValueInReplica(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
+                    ret = slave_replic.setVaule(padInt.getID(), this.valueAux, transactionID, this.accessVersion);
                     master.slaveIsDead(slaveId);
                     return ret;
                 }
