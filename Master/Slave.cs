@@ -128,6 +128,8 @@ namespace Master
         }
         private void printStatus()
         {
+            frozenHandler();
+
             System.Console.WriteLine("Slave" + port + "current status: " + getStatus());
             System.Console.WriteLine(myResponsability.Count() + " Registed slaves: ");
             foreach (KeyValuePair<int, SortedList<int, PadIntStored>> kvp in myResponsability)
@@ -214,7 +216,6 @@ namespace Master
 
                     throw new Exception("só toleramos uma falta");
                 }
-                return aux;
             }
             else
             {
@@ -257,7 +258,6 @@ namespace Master
 
                        // throw new TxException();
                     }
-                    return aux;
                 }
                 else
                 {
@@ -291,6 +291,8 @@ namespace Master
         }
         public bool setVaule(int uid, int value, String newVersion, String oldVersion)
         {
+            frozenHandler();
+
             Console.WriteLine("SET VALUE!! " + value + " isMine? " + isMine(uid));
             if (isMine(uid))
             {
@@ -323,7 +325,6 @@ namespace Master
                 {
                     throw new TxException("failed to set value in replica"); //TODO CHANGE THIS
                 }
-                return true;
             }
             else
             {
@@ -349,6 +350,8 @@ namespace Master
         }
         public bool unlockPadInt(int uid, String lockby)
         {
+            frozenHandler();
+
             if (isMine(uid))
             {
                 ISlaveService slave = connectToReplic();
@@ -400,6 +403,7 @@ namespace Master
         }
         public bool lockPadInt(int uid, String lockby)
         {
+            frozenHandler();
 
             if (isMine(uid))
             {
@@ -490,6 +494,7 @@ namespace Master
             return willAbort; //return false if not.
         }
         public String accessPadiIntVersion(int uid) {
+
             PadIntStored  padint = accessPadInt(uid);
             if (padint != null) {
                 return padint.getVersion();

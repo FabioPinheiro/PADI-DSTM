@@ -89,7 +89,7 @@ namespace PADI_DSTM
         {
             if (tx != null)
             {
-                Console.WriteLine("Entrou no TxCommit!!! SIM OUTRA VEZ!!");
+                //Console.WriteLine("Entrou no TxCommit!!! SIM OUTRA VEZ!!");
 
                 bool ret = false;
                 long counter;
@@ -123,7 +123,7 @@ namespace PADI_DSTM
                 tx = null;
                 return ret;
             }
-            else { throw new TxException("Não existe nenhuma transação");  return false; }
+            else { throw new TxException("Não existe nenhuma transação"); }
         }
         public static bool TxAbort() //SOMOS CONTRA O ABORTO!! PRO VIDA!!
         {
@@ -306,7 +306,6 @@ namespace PADI_DSTM
         public bool setLock(String transactionID, ISlaveService slave, IMasterService master, int slaveId)
         {
             ISlaveService slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + master.whereIsMyReplica(slaveId) + "/MyRemoteObjectName");
-            bool repeat = true;
             try
             {
                 lockedAux = slave.lockPadInt(padInt.getID(), transactionID);
@@ -314,7 +313,6 @@ namespace PADI_DSTM
             }
             catch (SocketException) {
                 lockedAux = slave_replic.lockPadInt(padInt.getID(), transactionID);
-                repeat = false;
                 master.slaveIsDead(slaveId);
 
             }
@@ -340,7 +338,6 @@ namespace PADI_DSTM
         public bool setUnlock(String transactionID, ISlaveService slave, IMasterService master, int slaveId)
         {
             ISlaveService slave_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + master.whereIsMyReplica(slaveId) + "/MyRemoteObjectName");
-            bool repeat = true;
             try
             {
                 lockedAux = !slave.unlockPadInt(padInt.getID(), transactionID);
@@ -348,30 +345,9 @@ namespace PADI_DSTM
             }
             catch (SocketException) {
                 lockedAux = !slave_replic.unlockPadInt(padInt.getID(), transactionID);
-                repeat = false;
                 master.slaveIsDead(slaveId);
             }
-          /*  try
-            {
-                if (repeat)
-                {
-                    Console.WriteLine("unlockInReplica Begin in " + slave_replic.getSlaveId());
-                    int location = slave_replic.whereIsPadInt(padInt.getID());
-                    ISlaveService aux_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-                    location = aux_replic.getReplic();
-                    aux_replic = (ISlaveService)Activator.GetObject(typeof(ISlaveService), "tcp://localhost:" + location + "/MyRemoteObjectName");
-                    
-                    aux_replic.unlockInReplica(padInt.getID(), transactionID);
-                    Console.WriteLine("unlockInReplica End");
 
-                }
-                //call to replic to lock
-            }
-            catch (SocketException)
-            {
-                master.slaveIsDead(slaveId);
-
-            }*/
             if (!lockedAux)
                 return true;
             else throw new TxException("setUnlock FAIL nuca devia chegarr aqui"); //FIXME!!!!!!!!!!!!!!!!!!
@@ -443,61 +419,6 @@ namespace PADI_DSTM
 
         public Transaction() {}
 
-        /*LIXO
-        private bool lockAllPadInt()
-        {
-            //bool locking = true; //FIXM
-            foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
-            {
-                if (!pair.Value.setLock(this, slave))
-                    return false;
-            }
-            return true; // consegui fazer look a todo
-        }
-        private bool unlockAllPadInt()
-        {
-            //bool locking = true; //FIXM
-            foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
-            {
-                if (!pair.Value.setUnlock(this, slave))
-                    return false;
-            }
-            return true; // consegui fazer look a todo
-        }
-        public bool TxCommitAUX()//FIXM muitos problemas de consistencia
-        {
-            Console.WriteLine("TxCommitAUX()");
-            try
-            {
-                lockAllPadInt(); //FIXM return ...
-                Console.WriteLine("lockAllPadInt()");
-                foreach (KeyValuePair<int, PadInt> pair in poolPadInt)
-                {
-                    if (!pair.Value.commitVaule(this, slave))
-                    {
-                        Console.WriteLine("throw new TxException();");
-                        throw new TxException("TxCommitAUX->commitVaule Fail");
-                    }
-                }
-
-            }
-            finally { unlockAllPadInt(); } ///FIXM return ...
-            Console.WriteLine("DONE-TxCommitAUX()");
-            return true;
-        }
-
-        public bool TxCommit()
-        {
-            //Task taskA = new Task(() => TxCommitAUX());
-            //ThreadStart ts = new ThreadStart(this.TxCommitAUX()); 
-            Task<bool>[] taskArray = { Task<bool>.Factory.StartNew(() => this.TxCommitAUX()) };
-
-            Console.WriteLine("WAITNG !!!!");
-            taskArray[0].Wait();
-            //taskA.Wait();
-            return taskArray[0].Result;
-            //Task[] taskArray = new Task[poolPadInt.Count]; //SEE http://msdn.microsoft.com/en-us/library/dd537609(v=vs.110).aspx
-        }*/
 
         private PadIntStored remotingAccessPadIntStored(int uid, bool toCreate, ISlaveService slave, IMasterService master, int slaveId)
         {
@@ -564,7 +485,7 @@ namespace PADI_DSTM
                 else return null;
             }*/
         }
-
+         
 
         public PadInt CreatePadInt(int uid, ISlaveService slave, IMasterService master, int slaveId)
         {
@@ -826,7 +747,7 @@ namespace PADI_DSTM
         }
         private void changeState(State status, IMasterService master, int slaveId)
         {
-            Console.WriteLine("Entra no changeState");
+            //Console.WriteLine("Entra no changeState");
             lock (lockState)
             {
                 if (status == State.impossibleToAbort && state == State.Abort && state == State.Commited)
@@ -840,7 +761,7 @@ namespace PADI_DSTM
             catch (SocketException) {
                 master.slaveIsDead(slaveId);
             }
-            Console.WriteLine("Sai no changeState");
+           // Console.WriteLine("Sai no changeState");
 
         }
         private void changeStateInReplic(State status, IMasterService master, int slaveId) { 

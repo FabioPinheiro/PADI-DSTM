@@ -45,7 +45,7 @@ class Cicle
             pi_f.Write(f);
             Console.Write(".");
             res = PadiDstm.TxCommit();
-            if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
+  //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
         }
         Console.WriteLine("####################################################################");
         Console.WriteLine("Status after cycle. Press enter for verification transaction.");
