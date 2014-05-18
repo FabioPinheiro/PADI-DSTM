@@ -12,9 +12,20 @@ namespace Client2
         static void Main(string[] args)
         {
             bool res;
-
+            bool resA = false;
+            bool resB = false;
             PadiDstm.Init();
             //2 Servidores
+            if ((args.Length > 0) && (args[0].Equals("A")))
+            {
+
+                resA = true;
+            }
+            if ((args.Length > 0) && (args[0].Equals("B")))
+            {
+                resB = true;
+
+            }
             if ((args.Length > 0) && (args[0].Equals("C")))
             {
                 res = PadiDstm.TxBegin();
@@ -87,14 +98,14 @@ namespace Client2
             }
 
             //10 Servidores
-            if ((args.Length > 0) && (args[0].Equals("1")))
+            if ((args.Length > 0) && (args[0].Equals("a")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(1);
                pi_a.Write(0);
                 res = PadiDstm.TxCommit();
             }
-            if ((args.Length > 0) && (args[0].Equals("2")))
+            if ((args.Length > 0) && (args[0].Equals("b")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(2);
@@ -102,28 +113,28 @@ namespace Client2
                 res = PadiDstm.TxCommit();
             }
 
-            if ((args.Length > 0) && (args[0].Equals("3")))
+            if ((args.Length > 0) && (args[0].Equals("c")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(3);
                 pi_a.Write(0);
                 res = PadiDstm.TxCommit();
             }
-            if ((args.Length > 0) && (args[0].Equals("4")))
+            if ((args.Length > 0) && (args[0].Equals("d")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(4);
                 pi_a.Write(0);
                 res = PadiDstm.TxCommit();
             }
-            if ((args.Length > 0) && (args[0].Equals("5")))
+            if ((args.Length > 0) && (args[0].Equals("e")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(5);
                 pi_a.Write(0);
                 res = PadiDstm.TxCommit();
             }
-            if ((args.Length > 0) && (args[0].Equals("6")))
+            if ((args.Length > 0) && (args[0].Equals("f")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(6);
@@ -131,28 +142,28 @@ namespace Client2
                 res = PadiDstm.TxCommit();
             }
 
-            if ((args.Length > 0) && (args[0].Equals("7")))
+            if ((args.Length > 0) && (args[0].Equals("g")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(7);
                 pi_a.Write(0);
                 res = PadiDstm.TxCommit();
             }
-            if ((args.Length > 0) && (args[0].Equals("8")))
+            if ((args.Length > 0) && (args[0].Equals("h")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(8);
                 pi_a.Write(0);
                 res = PadiDstm.TxCommit();
             }
-            if ((args.Length > 0) && (args[0].Equals("9")))
+            if ((args.Length > 0) && (args[0].Equals("i")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(9);
                 pi_a.Write(0);
                 res = PadiDstm.TxCommit();
             }
-            if ((args.Length > 0) && (args[0].Equals("10")))
+            if ((args.Length > 0) && (args[0].Equals("j")))
             {
                 res = PadiDstm.TxBegin();
                 PadInt pi_a = PadiDstm.CreatePadInt(10);
@@ -172,16 +183,16 @@ namespace Client2
 
          
 
-            if ((args.Length > 0) && (args[0].Equals("C")))
+            if (resA)
             {
                 for (int i = 0; i < 1000; i++)
                 {
                     res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(2);
-                    PadInt pi_b1 = PadiDstm.CreatePadInt(3);
-                    PadInt pi_c1 = PadiDstm.CreatePadInt(4);
-                    PadInt pi_d1 = PadiDstm.CreatePadInt(5);
-                    PadInt pi_e1 = PadiDstm.CreatePadInt(1);
+                    PadInt pi_a1 = PadiDstm.AccessPadInt(2);
+                    PadInt pi_b1 = PadiDstm.AccessPadInt(3);
+                    PadInt pi_c1 = PadiDstm.AccessPadInt(4);
+                    PadInt pi_d1 = PadiDstm.AccessPadInt(5);
+                    PadInt pi_e1 = PadiDstm.AccessPadInt(1);
                     int a1 = pi_a1.Read();
                     a1++;
                     pi_a1.Write(a1);
@@ -207,17 +218,17 @@ namespace Client2
                     //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
                 }
             }
-            if ((args.Length > 0) && (args[0].Equals("D")))
+            if (resB)
             {
 
                 for (int i = 0; i < 1000; i++)
                 {
                     res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(6);
-                    PadInt pi_b1 = PadiDstm.CreatePadInt(7);
-                    PadInt pi_c1 = PadiDstm.CreatePadInt(8);
-                    PadInt pi_d1 = PadiDstm.CreatePadInt(9);
-                    PadInt pi_e1 = PadiDstm.CreatePadInt(10);
+                    PadInt pi_a1 = PadiDstm.AccessPadInt(6);
+                    PadInt pi_b1 = PadiDstm.AccessPadInt(7);
+                    PadInt pi_c1 = PadiDstm.AccessPadInt(8);
+                    PadInt pi_d1 = PadiDstm.AccessPadInt(9);
+                    PadInt pi_e1 = PadiDstm.AccessPadInt(10);
 
                     int a1 = pi_a1.Read();
                     a1++;
@@ -247,250 +258,6 @@ namespace Client2
 
 
 
-            //4 Servidores
-
-
-            if ((args.Length > 0) && (args[0].Equals("E")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(1);
-                    PadInt pi_b1 = PadiDstm.CreatePadInt(2);
-                    PadInt pi_c1 = PadiDstm.CreatePadInt(3);
-                   
-
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-
-                    int b1 = pi_b1.Read();
-                    b1++;
-                    pi_b1.Write(b1);
-
-                    int c1 = pi_c1.Read();
-                    c1++;
-                    pi_c1.Write(c1);
-
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                }
-            }
-
-            if ((args.Length > 0) && (args[0].Equals("F")))
-            {
-
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(4);
-                    PadInt pi_b1 = PadiDstm.CreatePadInt(5);
-                    PadInt pi_c1 = PadiDstm.CreatePadInt(6);
-
-
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-
-                    int b1 = pi_b1.Read();
-                    b1++;
-                    pi_b1.Write(b1);
-
-                    int c1 = pi_c1.Read();
-                    c1++;
-                    pi_c1.Write(c1);
-
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-
-
-            if ((args.Length > 0) && (args[0].Equals("G")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(7);
-                    PadInt pi_b1 = PadiDstm.CreatePadInt(8);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-
-                    int b1 = pi_b1.Read();
-                    b1++;
-                    pi_b1.Write(b1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-            if ((args.Length > 0) && (args[0].Equals("H")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(9);
-                    PadInt pi_b1 = PadiDstm.CreatePadInt(10);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-
-                    int b1 = pi_b1.Read();
-                    b1++;
-                    pi_b1.Write(b1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-
-            //10 Servidores
-            if ((args.Length > 0) && (args[0].Equals("1")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(1);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-
-            if ((args.Length > 0) && (args[0].Equals("2")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(2);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-
-            if ((args.Length > 0) && (args[0].Equals("3")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(3);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-            if ((args.Length > 0) && (args[0].Equals("4")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(4);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-            if ((args.Length > 0) && (args[0].Equals("5")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(5);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-            if ((args.Length > 0) && (args[0].Equals("6")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(6);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-
-            if ((args.Length > 0) && (args[0].Equals("7")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(7);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-            if ((args.Length > 0) && (args[0].Equals("8")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(8);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-            if ((args.Length > 0) && (args[0].Equals("9")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(9);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
-            if ((args.Length > 0) && (args[0].Equals("10")))
-            {
-                for (int i = 0; i < 1000; i++)
-                {
-                    res = PadiDstm.TxBegin();
-                    PadInt pi_a1 = PadiDstm.CreatePadInt(10);
-                    int a1 = pi_a1.Read();
-                    a1++;
-                    pi_a1.Write(a1);
-                    Console.Write(".");
-                    res = PadiDstm.TxCommit();
-                    //          if (!res) Console.WriteLine("$$$$$$$$$$$$$$ ABORT $$$$$$$$$$$$$$$$$");
-                } 
-            }
             stopWatch.Stop();
             // Get the elapsed time as a TimeSpan value.
             TimeSpan ts = stopWatch.Elapsed;
